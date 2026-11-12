@@ -2,6 +2,7 @@ import { localeCodes, locales, type Locale } from './config';
 import tr, { type Dictionary } from './locales/tr';
 import en from './locales/en';
 import ar from './locales/ar';
+import type { Text } from './text';
 import { href } from '@/lib/url';
 import { formatters } from '@/lib/format';
 
@@ -18,6 +19,8 @@ export function useI18n(locale: Locale) {
     locale,
     meta: locales[locale],
     t: dictionaries[locale],
+    /** Üç dilli metnin bu dildeki karşılığı (kategori, filtre, ilan adları). */
+    L: (text: Text) => text[locale],
     link: (path = '') => href(locale, path),
     fmt: formatters(locale),
   };

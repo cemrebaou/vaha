@@ -19,7 +19,7 @@ Gereken: Node.js 22.23 veya üstü.
 
 ```
 src/
-├─ config/        Site ayarları: kategoriler, bölgeler, adresler, para birimleri
+├─ config/        Site ayarları: kategori ağacı, arama kriterleri, bölgeler, adresler
 ├─ i18n/          Dil altyapısı
 │  └─ locales/    Her dil için bir sözlük (tr, en, ar)
 ├─ styles/        Tasarım tokenları ve ortak stiller
@@ -27,12 +27,12 @@ src/
 ├─ components/
 │  ├─ ui/         İkon, logo gibi küçük parçalar
 │  ├─ layout/     Üst menü, alt bilgi, mobil alt menü
-│  ├─ search/     Arama kutusu, filtreler, sonuç görünümü
-│  ├─ listing/    İlan kartı, ilan ızgarası, fotoğraf yer tutucusu
-│  └─ home/       Ana sayfa bölümleri
+│  ├─ search/     Filtre paneli, kategori ağacı, sonuç listesi, kategori seçici
+│  ├─ listing/    Vitrin karesi, fotoğraf yer tutucusu
+│  └─ home/       Ana sayfa: sol kategori menüsü, hizmet bağlantıları
 ├─ data/          Örnek ilanlar (gerçek veri gelince silinir)
 ├─ lib/           Yardımcılar: adres, biçimlendirme, ilan veri katmanı
-├─ scripts/       Tarayıcıda çalışan tek küçük betik (favoriler, dil tercihi)
+├─ scripts/       Tarayıcıdaki küçük betikler: favoriler/dil tercihi, sonuç filtreleme
 └─ pages/         Adresler. [locale] klasörü her dil için sayfa üretir
 docs/             Mimari ve tasarım kararları
 ```
@@ -41,10 +41,11 @@ docs/             Mimari ve tasarım kararları
 
 | İş | Nerede |
 | --- | --- |
-| Yeni dil eklemek | `src/i18n/config.ts` içine bir satır, `src/i18n/locales/` altına sözlük, `src/i18n/index.ts` içinde bağlamak |
+| Yeni dil eklemek | `src/i18n/config.ts`, `src/i18n/text.ts` (tx fonksiyonu), `src/i18n/locales/` altına sözlük |
 | Açılış dilini değiştirmek | `src/i18n/config.ts` → `defaultLocale` |
-| Bir metni değiştirmek | `src/i18n/locales/tr.ts` (diğer dillerde aynı anahtar) |
-| Kategori eklemek | `src/config/categories.ts` + sözlüklerde adı |
+| Arayüz metni değiştirmek | `src/i18n/locales/tr.ts` (diğer dillerde aynı anahtar) |
+| Kategori eklemek | `src/config/categories.ts` (adı üç dilde, kriter seti) |
+| Arama kriteri eklemek | `src/config/filters.ts` (alanı tanımla, ilgili sete ekle) |
 | Renk ya da yazı değiştirmek | `src/styles/tokens.css` |
 | Yeni sayfa | `src/pages/[locale]/` altına dosya, adresi `src/config/routes.ts` içine |
 | Gerçek veriyi bağlamak | Yalnızca `src/lib/listings.ts` |

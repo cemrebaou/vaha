@@ -31,6 +31,26 @@ main {
   flex: 1;
 }
 
+[hidden] {
+  display: none !important;
+}
+
+/* İnce bayrak şeridi: sayfanın en üstünde kırmızı, yeşil, beyaz, siyah. */
+.flag-strip {
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--flag-red) 0 12%,
+    var(--flag-green) 12% 50%,
+    var(--c-line) 50% 76%,
+    var(--flag-black) 76% 100%
+  );
+}
+
+[dir='rtl'] .flag-strip {
+  transform: scaleX(-1);
+}
+
 /* Çentikli telefonlarda sabit üst menünün üstünde kalan bandı sayfa rengiyle kapatır. */
 body::before {
   content: '';

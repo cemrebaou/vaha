@@ -35,6 +35,14 @@ Bütçe: sayfa başına HTML + CSS + JS sıkıştırılmış halde 40 KB'ın alt
 - Fiyat, sayı ve tarih biçimleri dile göre `src/lib/format.ts` içinden gelir.
 - Kök adres (`/`) ziyaretçiyi son seçtiği dile, yoksa varsayılan dile yönlendirir.
 
+## Düzen ve arama
+
+- Düzen sahibinden.com'un alışılmış yapısını izler: üstte arama çubuğu ve Detaylı Arama, solda sayılarıyla kategori ağacı, ortada Anasayfa Vitrini.
+- Kategori ağacı (10 ana, 70+ alt kategori) `src/config/categories.ts` içinde. Her alt kategori bir kriter setine bağlıdır.
+- Kriterler (`src/config/filters.ts`) tek kaynaktır: filtre paneli, sonuç tablosu sütunları ve ilan detayındaki bilgi tablosu aynı tanımdan üretilir.
+- Dubai'ye uyarlananlar: adres yerine Dubai bölgeleri, fiyat AED, yıllık kira, GCC/Amerikan spesifikasyon, kayıt yeri (emirlik), freehold/leasehold, off-plan, soğutma dahil (chiller free), iş ilanlarında vize.
+- Sonuç sayfalarında filtreleme ve sıralama tarayıcıda yapılır (`src/scripts/results.ts`, yaklaşık 2 KB); seçimler adres çubuğuna yazılır, bağlantı paylaşılabilir. Sunucu geldiğinde aynı form sunucuya sorgu gönderecek.
+
 ## Veri katmanı
 
 Sayfalar ilanlara yalnızca `src/lib/listings.ts` üzerinden ulaşır. Şu an örnek veriyi döndürür. Gerçek API geldiğinde yalnızca bu dosya değişir.
@@ -55,6 +63,6 @@ Bu seçimler kesin değil; ürün kararları netleşince birlikte gözden geçir
 
 ## Bilinen sınırlar
 
-- Arama ve filtre formları henüz sonuç üretmez; yalnızca arayüzdür.
+- Filtreler yalnızca sayfadaki örnek ilanlar üzerinde çalışır; sunucu araması henüz yok.
 - İlanlar, satıcı bilgileri ve sayılar örnektir.
 - Arapça çeviri taslaktır.

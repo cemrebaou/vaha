@@ -1,0 +1,239 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { areas } from '@/config/areas';
+import { defaultCurrency } from '@/config/currencies';
+import { NO, YES, setFields, type Field, type FilterSetId } from '@/config/filters';
+
+interface Props {
+  locale: Locale;
+  /** Alt kategorinin kriter seti; yoksa yalnızca ortak kriterler gösterilir. */
+  set?: FilterSetId;
+}
+
+const { locale, set } = Astro.props;
+const { t, L } = useI18n(locale);
+const f = t.filters;
+const specific: Field[] = set ? setFields(set) : [];
+
+const dates = [
+  { value: '1', label: f.dates.d1 },
+  { value: '2', label: f.dates.d2 },
+  { value: '7', label: f.dates.d7 },
+  { value: '15', label: f.dates.d15 },
+  { value: '30', label: f.dates.d30 },
+];
+---
+
+<!--
+  Kriterler: her grup data-field ve data-kind taşır; tarayıcıdaki küçük betik
+  (src/scripts/results.ts) bunlara bakarak satırları süzer. Adres çubuğu da güncellenir.
+-->
+<form class="fp" data-filter-form method="get" novalidate>
+  <div class="fp__group fp__group--flat" data-field="q" data-kind="text">
+    <label class="fp__label" for="fp-q">{f.keyword}</label>
+    <input class="input" type="search" id="fp-q" name="q" placeholder={f.keywordPlaceholder} />
+  </div>
+
+  <details class="fp__group" open data-field="area" data-kind="multi">
+    <summary>{f.address}<Icon name="chevron-down" size={16} /></summary>
+    <div class="fp__body fp__body--scroll">
+      {
+        areas.map((area) => (
+          <label class="check" for={`fp-area-${area.id}`}>
+            <input type="checkbox" id={`fp-area-${area.id}`} name="area" value={area.id} />
+            {L(area.name)}
+          </label>
+        ))
+      }
+    </div>
+  </details>
+
+  <details class="fp__group" open data-field="price" data-kind="range">
+    <summary>{f.price} ({defaultCurrency})<Icon name="chevron-down" size={16} /></summary>
+    <div class="fp__body fp__range">
+      <input class="input" type="number" id="fp-price-min" name="price_min" min="0" inputmode="numeric" placeholder={f.min} aria-label={`${f.price} ${f.min}`} />
+      <span aria-hidden="true">–</span>
+      <input class="input" type="number" id="fp-price-max" name="price_max" min="0" inputmode="numeric" placeholder={f.max} aria-label={`${f.price} ${f.max}`} />
+    </div>
+  </details>
+
+  {
+    specific.map((field, index) => (
+      <details class="fp__group" open={index < 2} data-field={field.id} data-kind={field.kind}>
+        <summary>
+          {L(field.label)}
+          {field.kind === 'range' && field.unit && ` (${L(field.unit)})`}
+          <Icon name="chevron-down" size={16} />
+        </summary>
+        {field.kind === 'range' && (
+          <div class="fp__body fp__range">
+            <input class="input" type="number" id={`fp-${field.id}-min`} name={`${field.id}_min`} min="0" inputmode="numeric" placeholder={f.min} aria-label={`${L(field.label)} ${f.min}`} />
+            <span aria-hidden="true">–</span>
+            <input class="input" type="number" id={`fp-${field.id}-max`} name={`${field.id}_max`} min="0" inputmode="numeric" placeholder={f.max} aria-label={`${L(field.label)} ${f.max}`} />
+          </div>
+        )}
+        {field.kind === 'multi' && (
+          <div class:list={['fp__body', { 'fp__body--scroll': field.options.length > 8 }]}>
+            {field.options.map((option) => (
+              <label class="check" for={`fp-${field.id}-${option.id}`}>
+                <input type="checkbox" id={`fp-${field.id}-${option.id}`} name={field.id} value={option.id} />
+                {L(option.label)}
+              </label>
+            ))}
+          </div>
+        )}
+        {field.kind === 'bool' && (
+          <div class="fp__body">
+            <div class="segmented">
+              <label>
+                <input type="radio" id={`fp-${field.id}-any`} name={field.id} value="" checked />
+                <span>{f.any}</span>
+              </label>
+              <label>
+                <input type="radio" id={`fp-${field.id}-yes`} name={field.id} value="yes" />
+                <span>{L(YES)}</span>
+              </label>
+              <label>
+                <input type="radio" id={`fp-${field.id}-no`} name={field.id} value="no" />
+                <span>{L(NO)}</span>
+              </label>
+            </div>
+          </div>
+        )}
+      </details>
+    ))
+  }
+
+  <details class="fp__group" data-field="d" data-kind="days">
+    <summary>{f.date}<Icon name="chevron-down" size={16} /></summary>
+    <div class="fp__body">
+      <label class="check" for="fp-d-any">
+        <input type="radio" id="fp-d-any" name="d" value="" checked />
+        {f.any}
+      </label>
+      {
+        dates.map((date) => (
+          <label class="check" for={`fp-d-${date.value}`}>
+            <input type="radio" id={`fp-d-${date.value}`} name="d" value={date.value} />
+            {date.label}
+          </label>
+        ))
+      }
+    </div>
+  </details>
+
+  <div class="fp__group fp__group--flat">
+    <p class="fp__label">{f.other}</p>
+    <div data-field="photo" data-kind="flag">
+      <label class="check" for="fp-photo">
+        <input type="checkbox" id="fp-photo" name="photo" value="1" />
+        {f.withPhoto}
+      </label>
+    </div>
+    <div data-field="u" data-kind="flag">
+      <label class="check" for="fp-u">
+        <input type="checkbox" id="fp-u" name="u" value="1" />
+        {f.urgent}
+      </label>
+    </div>
+  </div>
+
+  <div class="fp__actions">
+    <button class="btn btn--brand btn--block" type="submit">
+      <Icon name="search" size={17} />
+      {t.results.apply}
+    </button>
+    <button class="btn btn--ghost btn--block" type="reset">{t.results.clear}</button>
+  </div>
+</form>
+
+<style>
+  .fp {
+    display: grid;
+  }
+
+  .fp__group {
+    border-block-end: 1px solid var(--c-line);
+  }
+
+  .fp__group--flat {
+    display: grid;
+    gap: var(--s-1);
+    padding-block: var(--s-3);
+  }
+
+  .fp__label {
+    font-size: var(--fs-xs);
+    font-weight: 600;
+  }
+
+  .fp__group summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-2);
+    min-height: 2.75rem;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .fp__group summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .fp__group summary :global(.icon) {
+    flex: none;
+    color: var(--c-ink-3);
+    transition: transform 0.2s var(--ease);
+  }
+
+  .fp__group[open] summary :global(.icon) {
+    transform: rotate(180deg);
+  }
+
+  .fp__body {
+    display: grid;
+    padding-block-end: var(--s-3);
+  }
+
+  .fp__body .check {
+    min-height: 1.875rem;
+    font-size: var(--fs-xs);
+  }
+
+  .fp__body--scroll {
+    max-height: 13rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .fp__range {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--c-ink-3);
+  }
+
+  .fp :global(.input) {
+    min-height: 2.375rem;
+    font-size: var(--fs-xs);
+  }
+
+  .fp :global(.segmented span) {
+    padding: 0.375rem 0.75rem;
+    font-size: var(--fs-xs);
+  }
+
+  .fp__actions {
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    gap: var(--s-1);
+    padding-block: var(--s-3);
+    background: var(--c-bg);
+  }
+</style>

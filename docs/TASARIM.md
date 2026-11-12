@@ -4,25 +4,22 @@ Tüm değerler `src/styles/tokens.css` içindedir. Bileşenler renk ya da ölç�
 
 ## Fikir
 
-Dubai bir inci avcılığı kasabasından büyüdü. Palet oradan gelir: inci beyazı zemin, körfezin lagün yeşili, gece denizinin koyu mürekkebi ve tek bir sıcak vurgu olarak safran.
+Renkler BAE bayrağından gelir ve beyaz zemin ağırlıklı kullanılır:
 
-Sitenin tek gösterişli öğesi **meşrebiye kafesi**: geleneksel Körfez evlerinde ışığı süzen sekiz köşeli yıldız örgüsü. Ana sayfanın köşesinde, ilan ver çağrısında ve fotoğraf yer tutucularında tekrar eder. Geri kalan her şey bilerek sakindir.
-
-## Renk
-
-| Token | Açık tema | Görev |
+| Token | Değer | Görev |
 | --- | --- | --- |
-| `--c-bg` | `#ffffff` | Sayfa zemini |
-| `--c-surface` | `#f5f9fa` | Bölüm ve kutu zemini |
-| `--c-ink` | `#1e3a46` | Ana metin |
-| `--c-ink-2` | `#557079` | İkincil metin |
-| `--c-brand` | `#167a80` | Marka: bağlantı, birincil düğme |
-| `--c-accent` | `#f6c453` | Yalnızca "İlan ver" eylemi |
-| `--c-line` | `#e3ecee` | Çizgi ve kenarlık |
+| `--c-bg` | `#ffffff` | Sayfa zemini (bayrağın beyazı) |
+| `--flag-green` | `#00732f` | Marka: bağlantılar, seçili durumlar, birincil düğme |
+| `--flag-red` | `#e0242c` | Yalnızca "Ücretsiz İlan Ver" ve "Acil" |
+| `--flag-black` | `#1b1d1c` | Metin |
+| `--c-surface` | `#f6f8f7` | Zebra satırlar, kutu zemini |
+| `--c-line` | `#e4e8e5` | Çizgi ve kenarlık |
 
-Site bilinçli olarak her zaman açık temadadır (beyaz ağırlıklı, ferah). Cihaz karanlık modda olsa da aynı görünür.
+Sayfanın en üstünde ve en altında ince bir bayrak şeridi (kırmızı, yeşil, beyaz, siyah) durur. Logo da aynı dört rengi taşır.
 
-Kural: safran yalnızca ilan verme eylemlerinde kullanılır. Böylece sayfadaki en önemli düğme her zaman tek bakışta bulunur.
+Site bilinçli olarak her zaman açık temadadır. Koyu tema ileride ayrı bir paletle eklenecek.
+
+Kural: kırmızı yalnızca ilan verme ve acil ilanlar için kullanılır. Böylece sayfadaki en önemli düğme her zaman tek bakışta bulunur.
 
 ## Yazı
 

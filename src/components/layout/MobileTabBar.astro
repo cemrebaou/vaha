@@ -17,7 +17,7 @@ const path = Astro.url.pathname;
 const tabs: { label: string; href: string; icon: IconName; post?: boolean }[] = [
   { label: t.nav.home, href: link(route.home()), icon: 'house' },
   { label: t.nav.search, href: link(route.search()), icon: 'search' },
-  { label: t.nav.post, href: link(route.post()), icon: 'plus', post: true },
+  { label: t.nav.postShort, href: link(route.post()), icon: "plus", post: true },
   { label: t.nav.favorites, href: link(route.favorites()), icon: 'heart' },
   { label: t.nav.account, href: link(route.login()), icon: 'circle-user' },
 ];

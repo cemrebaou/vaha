@@ -3,22 +3,29 @@ import Icon from '@/components/ui/Icon.astro';
 import type { IconName } from '@/components/ui/icons';
 
 interface Props {
-  /** Renk tonu: 1 körfez, 2 kum, 3 alacakaranlık, 4 gün batımı */
+  /** Renk tonu: 1 yeşil, 2 kum, 3 taş, 4 gül */
   tone?: 1 | 2 | 3 | 4;
   icon?: IconName;
   label: string;
   /** En-boy oranı, ör. "4 / 3" */
   ratio?: string;
+  /** Küçük karelerde (vitrin, sonuç satırı) daha küçük ikon. */
+  small?: boolean;
   class?: string;
 }
 
-const { tone = 1, icon = 'camera', label, ratio = '4 / 3', class: className } = Astro.props;
+const { tone = 1, icon = 'camera', label, ratio = '4 / 3', small = false, class: className } = Astro.props;
 ---
 
 <!-- Gerçek fotoğraf gelene kadar yerini tutar; ölçüsü sabit olduğu için sayfa zıplamaz. -->
-<div class:list={['ph', `ph--${tone}`, className]} style={`aspect-ratio:${ratio}`} role="img" aria-label={label}>
+<div
+  class:list={['ph', `ph--${tone}`, { 'ph--small': small }, className]}
+  style={`aspect-ratio:${ratio}`}
+  role="img"
+  aria-label={label}
+>
   <span class="ph__icon">
-    <Icon name={icon} size={26} />
+    <Icon name={icon} size={small ? 17 : 26} />
   </span>
 </div>
 
@@ -63,6 +70,10 @@ const { tone = 1, icon = 'camera', label, ratio = '4 / 3', class: className } = 
       mask-image: var(--lattice);
       mask-size: 56px 56px;
     }
+
+    .ph--small::before {
+      mask-size: 28px 28px;
+    }
   }
 
   .ph__icon {
@@ -74,5 +85,10 @@ const { tone = 1, icon = 'camera', label, ratio = '4 / 3', class: className } = 
     border-radius: 50%;
     background: color-mix(in srgb, var(--c-raised) 72%, transparent);
     color: var(--c-ink-2);
+  }
+
+  .ph--small .ph__icon {
+    width: 2.25rem;
+    height: 2.25rem;
   }
 </style>

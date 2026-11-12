@@ -1,0 +1,226 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import { fill, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { groups } from '@/config/categories';
+
+interface Props {
+  locale: Locale;
+  /** link: alt kategori bağlantı olarak açılır (Detaylı Arama). select: seçilir (İlan Ver). */
+  mode: 'link' | 'select';
+}
+
+const { locale, mode } = Astro.props;
+const { t, L, link } = useI18n(locale);
+
+// Sol sütunda seçilen ana kategorinin alt kategorileri sağda görünür; betik gerekmez.
+const rules = groups
+  .map(
+    (group) =>
+      `.picker:has(#pick-${group.id}:checked) .picker__subs[data-group="${group.id}"]{display:grid}`,
+  )
+  .join('');
+---
+
+<div class="picker">
+  <fieldset class="picker__col">
+    <legend class="picker__legend">{t.advanced.group}</legend>
+    {
+      groups.map((group, index) => (
+        <label class="picker__group" for={`pick-${group.id}`}>
+          <input type="radio" id={`pick-${group.id}`} name="pick-group" value={group.id} checked={index === 0} />
+          <span class="picker__icon">
+            <Icon name={group.icon} size={18} />
+          </span>
+          <span class="picker__name">{L(group.name)}</span>
+          <Icon name="chevron-right" size={18} flip class="picker__chev" />
+        </label>
+      ))
+    }
+  </fieldset>
+
+  <div class="picker__col picker__col--subs">
+    <p class="picker__legend">{t.advanced.sub}</p>
+    {
+      groups.map((group) => (
+        <ul class="picker__subs" data-group={group.id}>
+          {mode === 'link' && (
+            <li>
+              <a class="picker__sub picker__sub--all" href={link(route.group(group.id))}>
+                {fill(t.advanced.all, { name: L(group.name) })}
+                <Icon name="chevron-right" size={16} flip />
+              </a>
+            </li>
+          )}
+          {group.subs.map((sub) => (
+            <li>
+              {mode === 'link' ? (
+                <a class="picker__sub" href={link(route.sub(group.id, sub.id))}>
+                  {L(sub.name)}
+                  <Icon name="chevron-right" size={16} flip />
+                </a>
+              ) : (
+                <label class="picker__sub" for={`pick-sub-${group.id}-${sub.id}`}>
+                  <input type="radio" id={`pick-sub-${group.id}-${sub.id}`} name="category" value={`${group.id}/${sub.id}`} />
+                  {L(sub.name)}
+                </label>
+              )}
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</div>
+
+<style is:inline set:html={rules}></style>
+
+<style>
+  .picker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-lg);
+    background: var(--c-raised);
+  }
+
+  .picker__col {
+    display: grid;
+    align-content: start;
+    padding: var(--s-2);
+  }
+
+  .picker__col--subs {
+    border-inline-start: 1px solid var(--c-line);
+    background: var(--c-surface);
+  }
+
+  .picker__legend {
+    padding: var(--s-2) var(--s-3);
+    color: var(--c-ink-3);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+  }
+
+  .picker__group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 3rem;
+    padding-inline: var(--s-3);
+    border-radius: var(--r-md);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .picker__group input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .picker__group:hover {
+    background: var(--c-surface);
+  }
+
+  .picker__group:has(input:checked) {
+    background: var(--c-brand-soft);
+    color: var(--c-brand-strong);
+  }
+
+  .picker__group:has(input:focus-visible) {
+    outline: 2px solid var(--c-brand);
+    outline-offset: -2px;
+  }
+
+  .picker__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--c-brand-soft);
+    color: var(--c-brand);
+  }
+
+  .picker__group:has(input:checked) .picker__icon {
+    background: var(--c-brand);
+    color: var(--c-on-brand);
+  }
+
+  .picker__name {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .picker__group :global(.picker__chev) {
+    color: var(--c-ink-3);
+  }
+
+  .picker__subs {
+    display: none;
+    align-content: start;
+  }
+
+  .picker__sub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-2);
+    min-height: 2.75rem;
+    padding-inline: var(--s-3);
+    border-radius: var(--r-md);
+    color: var(--c-ink);
+    font-size: var(--fs-sm);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .picker__sub--all {
+    color: var(--c-brand);
+    font-weight: 500;
+  }
+
+  .picker__sub :global(.icon) {
+    color: var(--c-ink-3);
+  }
+
+  .picker__sub:hover {
+    background: var(--c-raised);
+    color: var(--c-brand);
+  }
+
+  label.picker__sub {
+    justify-content: flex-start;
+  }
+
+  label.picker__sub input {
+    width: 1.0625rem;
+    height: 1.0625rem;
+    margin: 0;
+    accent-color: var(--c-brand);
+  }
+
+  label.picker__sub:has(input:checked) {
+    background: var(--c-raised);
+    color: var(--c-brand-strong);
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .picker {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .picker__col--subs {
+      border-inline-start: 0;
+      border-block-start: 1px solid var(--c-line);
+    }
+  }
+</style>

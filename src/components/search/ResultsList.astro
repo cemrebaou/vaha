@@ -1,0 +1,329 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import PhotoPlaceholder from '@/components/listing/PhotoPlaceholder.astro';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { getGroup } from '@/config/categories';
+import { city, getArea } from '@/config/areas';
+import type { Field } from '@/config/filters';
+import { fieldText, rowData } from '@/lib/fields';
+import type { Listing } from '@/lib/listings';
+
+interface Props {
+  locale: Locale;
+  items: Listing[];
+  /** Kategoriye özel sütunlar (ör. m², oda sayısı, yıl, km). */
+  columns: Field[];
+}
+
+const { locale, items, columns } = Astro.props;
+const { t, L, link, fmt } = useI18n(locale);
+const c = t.results.columns;
+
+const period = {
+  year: t.listing.perYear,
+  month: t.listing.perMonth,
+  day: t.listing.perDay,
+  hour: t.listing.perHour,
+};
+
+// Sütun düzeni: fotoğraf, başlık, kategoriye özel sütunlar, fiyat, tarih, konum, favori.
+const template = [
+  '7.5rem',
+  'minmax(0, 1fr)',
+  ...columns.map(() => '6.5rem'),
+  '8.5rem',
+  '6rem',
+  '8.5rem',
+  '2.5rem',
+].join(' ');
+---
+
+<div class="rl" style={`--tpl: ${template}`}>
+  <div class="rl__head" aria-hidden="true">
+    <span></span>
+    <span>{c.title}</span>
+    {columns.map((column) => <span>{L(column.label)}</span>)}
+    <span>{c.price}</span>
+    <span>{c.date}</span>
+    <span>{c.location}</span>
+    <span></span>
+  </div>
+
+  <ol class="rl__rows" data-rows>
+    {
+      items.map((item) => {
+        const [dayMonth, year] = fmt.dateParts(item.daysAgo);
+        const title = L(item.title);
+        return (
+          <li
+            class="row"
+            {...rowData(item)}
+            data-f-price={item.price}
+            data-f-area={item.area}
+            data-days={item.daysAgo}
+            data-urgent={item.urgent ? '1' : '0'}
+            data-photo="0"
+            data-q={`${title} ${item.id}`.toLocaleLowerCase(locale)}
+          >
+            <a class="row__thumb" href={link(route.listing(item.id))} tabindex="-1" aria-hidden="true">
+              <PhotoPlaceholder
+                tone={item.tone}
+                icon={getGroup(item.group).icon}
+                label={t.listing.photoSlot}
+                ratio="4 / 3"
+                small
+              />
+            </a>
+            <div class="row__title">
+              <a href={link(route.listing(item.id))}>{title}</a>
+              {item.urgent && <span class="row__urgent">{t.listing.urgent}</span>}
+            </div>
+            {columns.map((column) => (
+              <div class="row__col">
+                <span class="row__label">{L(column.label)}</span>
+                {fieldText(column, item, locale, fmt.number) ?? '–'}
+              </div>
+            ))}
+            <div class="row__price">
+              {fmt.price(item.price)}
+              {item.period && <span class="row__period">{period[item.period]}</span>}
+            </div>
+            <div class="row__date">
+              <span>{dayMonth}</span>
+              <span>{year}</span>
+            </div>
+            <div class="row__loc">
+              <span>{L(city)}</span>
+              <span>{L(getArea(item.area).name)}</span>
+            </div>
+            <button class="row__fav" type="button" data-fav={item.id} aria-pressed="false" aria-label={t.listing.save}>
+              <Icon name="heart" size={17} />
+            </button>
+          </li>
+        );
+      })
+    }
+  </ol>
+</div>
+
+<style>
+  .rl {
+    font-size: var(--fs-xs);
+  }
+
+  .rl__head,
+  .row {
+    display: grid;
+    grid-template-columns: var(--tpl);
+    align-items: center;
+    column-gap: var(--s-3);
+  }
+
+  .rl__head {
+    padding: var(--s-2) var(--s-2);
+    border-block-end: 1px solid var(--c-line-strong);
+    color: var(--c-ink-2);
+    font-weight: 600;
+  }
+
+  .row {
+    position: relative;
+    padding: var(--s-2);
+    border-block-end: 1px solid var(--c-line);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .row:nth-child(even) {
+    background: var(--c-surface);
+  }
+
+  .row:hover {
+    background: var(--c-brand-soft);
+  }
+
+  .row__thumb :global(.ph) {
+    border-radius: var(--r-xs);
+  }
+
+  .row__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-1) var(--s-2);
+    min-width: 0;
+  }
+
+  .row__title a {
+    color: var(--c-brand);
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .row__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .row__title a:hover {
+    text-decoration: underline;
+  }
+
+  .row__urgent {
+    padding: 0.05rem 0.4rem;
+    border-radius: var(--r-xs);
+    background: var(--c-accent);
+    color: var(--c-on-accent);
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+  }
+
+  .row__label {
+    display: none;
+  }
+
+  .row__price {
+    display: grid;
+    color: var(--c-ink);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  .row__period {
+    color: var(--c-ink-3);
+    font-size: var(--fs-2xs);
+    font-weight: 400;
+  }
+
+  .row__date,
+  .row__loc {
+    display: grid;
+    color: var(--c-ink-2);
+    line-height: 1.4;
+  }
+
+  .row__fav {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--c-ink-3);
+  }
+
+  .row__fav:hover {
+    background: var(--c-raised);
+    color: var(--c-accent);
+  }
+
+  .row__fav[aria-pressed='true'] {
+    color: var(--c-accent);
+  }
+
+  .row__fav[aria-pressed='true'] :global(.icon) {
+    fill: currentColor;
+  }
+
+  /* ---- Galeri görünümü (Görünüm: Galeri seçilince) ---- */
+  :global(.rmain:has(#view-gallery:checked)) .rl__head {
+    display: none;
+  }
+
+  :global(.rmain:has(#view-gallery:checked)) .rl__rows {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: var(--s-4);
+    padding-block-start: var(--s-3);
+  }
+
+  :global(.rmain:has(#view-gallery:checked)) .row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--s-1);
+    padding: 0;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-md);
+    background: var(--c-raised);
+    overflow: hidden;
+  }
+
+  :global(.rmain:has(#view-gallery:checked)) .row > :not(.row__thumb) {
+    padding-inline: var(--s-3);
+  }
+
+  :global(.rmain:has(#view-gallery:checked)) .row__thumb :global(.ph) {
+    border-radius: 0;
+  }
+
+  :global(.rmain:has(#view-gallery:checked)) .row__col,
+  :global(.rmain:has(#view-gallery:checked)) .row__date {
+    display: none;
+  }
+
+  :global(.rmain:has(#view-gallery:checked)) .row__loc {
+    display: flex;
+    gap: var(--s-1);
+    padding-block-end: var(--s-3);
+  }
+
+  :global(.rmain:has(#view-gallery:checked)) .row__fav {
+    position: absolute;
+    inset-block-start: var(--s-2);
+    inset-inline-end: var(--s-2);
+    padding: 0;
+    background: var(--c-raised);
+  }
+
+  /* ---- Telefon: satır kart gibi dizilir ---- */
+  @media (max-width: 760px) {
+    .rl__head {
+      display: none;
+    }
+
+    .row {
+      grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+      grid-template-areas:
+        'thumb title fav'
+        'thumb meta meta'
+        'thumb price price';
+      align-items: start;
+      row-gap: var(--s-1);
+    }
+
+    .row__thumb {
+      grid-area: thumb;
+    }
+
+    .row__title {
+      grid-area: title;
+    }
+
+    .row__fav {
+      grid-area: fav;
+    }
+
+    .row__price {
+      grid-area: price;
+    }
+
+    .row__col,
+    .row__date {
+      display: none;
+    }
+
+    .row__loc {
+      grid-area: meta;
+      display: flex;
+      gap: var(--s-1);
+    }
+  }
+</style>

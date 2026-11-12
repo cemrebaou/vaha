@@ -1,0 +1,55 @@
+---
+import PhotoPlaceholder from './PhotoPlaceholder.astro';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { getGroup } from '@/config/categories';
+import type { Listing } from '@/lib/listings';
+
+interface Props {
+  locale: Locale;
+  item: Listing;
+}
+
+const { locale, item } = Astro.props;
+const { t, L, link } = useI18n(locale);
+const title = L(item.title);
+---
+
+<!-- Vitrin karesi: küçük fotoğraf ve tek satır başlık. -->
+<a class="tile" href={link(route.listing(item.id))} title={title}>
+  <PhotoPlaceholder tone={item.tone} icon={getGroup(item.group).icon} label={t.listing.photoSlot} ratio="4 / 3" small />
+  <span class="tile__title">{title}</span>
+</a>
+
+<style>
+  .tile {
+    display: grid;
+    gap: 0.375rem;
+    min-width: 0;
+    color: var(--c-ink);
+    font-size: var(--fs-2xs);
+    line-height: 1.35;
+    text-decoration: none;
+  }
+
+  .tile :global(.ph) {
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-xs);
+    transition: border-color 0.15s var(--ease);
+  }
+
+  .tile:hover :global(.ph) {
+    border-color: var(--c-brand);
+  }
+
+  .tile:hover .tile__title {
+    color: var(--c-brand);
+  }
+
+  .tile__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>

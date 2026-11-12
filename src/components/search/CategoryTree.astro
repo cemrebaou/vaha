@@ -1,0 +1,138 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { groups, getGroup } from '@/config/categories';
+import { countBy, totalCount } from '@/lib/listings';
+
+interface Props {
+  locale: Locale;
+  group?: string;
+  sub?: string;
+}
+
+const { locale, group, sub } = Astro.props;
+const { t, L, link, fmt } = useI18n(locale);
+const current = group ? getGroup(group) : undefined;
+---
+
+<nav class="tree" aria-label={t.nav.categories}>
+  <p class="tree__title">{t.nav.categories}</p>
+  {
+    current ? (
+      <ul>
+        <li>
+          <a class="tree__up" href={link(route.search())}>
+            <Icon name="chevron-right" size={14} flip class="tree__back" />
+            {t.results.allCategories}
+          </a>
+        </li>
+        <li>
+          <a
+            class="tree__group"
+            href={link(route.group(current.id))}
+            aria-current={sub ? undefined : 'page'}
+          >
+            {L(current.name)}
+            <span class="count">({fmt.number(countBy(current.id))})</span>
+          </a>
+          <ul class="tree__subs">
+            {current.subs.map((item) => (
+              <li>
+                <a
+                  href={link(route.sub(current.id, item.id))}
+                  aria-current={item.id === sub ? 'page' : undefined}
+                >
+                  {L(item.name)}
+                  <span class="count">({fmt.number(countBy(current.id, item.id))})</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </li>
+      </ul>
+    ) : (
+      <ul>
+        <li>
+          <span class="tree__group" aria-current="page">
+            {t.results.allCategories}
+            <span class="count">({fmt.number(totalCount())})</span>
+          </span>
+          <ul class="tree__subs">
+            {groups.map((item) => (
+              <li>
+                <a href={link(route.group(item.id))}>
+                  {L(item.name)}
+                  <span class="count">({fmt.number(countBy(item.id))})</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </li>
+      </ul>
+    )
+  }
+</nav>
+
+<style>
+  .tree {
+    padding-block-end: var(--s-3);
+    border-block-end: 1px solid var(--c-line);
+    font-size: var(--fs-xs);
+  }
+
+  .tree__title {
+    margin-block-end: var(--s-2);
+    font-weight: 600;
+  }
+
+  .tree a {
+    color: var(--c-brand);
+    text-decoration: none;
+  }
+
+  .tree a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .tree__up {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-block-end: var(--s-1);
+  }
+
+  .tree__up :global(.tree__back) {
+    transform: scaleX(-1);
+  }
+
+  :global([dir='rtl']) .tree__up :global(.tree__back) {
+    transform: none;
+  }
+
+  .tree__group {
+    display: block;
+    padding-block: 0.2rem;
+    font-weight: 600;
+  }
+
+  .tree [aria-current='page'] {
+    color: var(--c-ink);
+    font-weight: 600;
+  }
+
+  .tree__subs {
+    display: grid;
+    gap: 0.2rem;
+    padding-inline-start: var(--s-3);
+  }
+
+  .count {
+    margin-inline-start: 0.25rem;
+    color: var(--c-ink-3);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

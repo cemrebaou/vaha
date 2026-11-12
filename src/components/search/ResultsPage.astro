@@ -1,0 +1,313 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import CategoryTree from './CategoryTree.astro';
+import FilterPanel from './FilterPanel.astro';
+import ResultsList from './ResultsList.astro';
+import { fill, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { getGroup, getSub } from '@/config/categories';
+import { setColumns } from '@/config/filters';
+import type { Listing } from '@/lib/listings';
+
+interface Props {
+  locale: Locale;
+  items: Listing[];
+  heading: string;
+  group?: string;
+  sub?: string;
+}
+
+const { locale, items, heading, group, sub } = Astro.props;
+const { t, L, link, fmt } = useI18n(locale);
+const r = t.results;
+
+const groupInfo = group ? getGroup(group) : undefined;
+const subInfo = group && sub ? getSub(group, sub) : undefined;
+const columns = subInfo ? setColumns(subInfo.set) : [];
+
+const crumbs = [
+  { label: t.nav.home, href: link(route.home()) },
+  ...(groupInfo ? [{ label: L(groupInfo.name), href: link(route.group(groupInfo.id)) }] : []),
+  ...(groupInfo && subInfo ? [{ label: L(subInfo.name), href: link(route.sub(groupInfo.id, subInfo.id)) }] : []),
+];
+---
+
+<div class="container rhead">
+  <nav class="crumbs" aria-label={t.nav.categories}>
+    <ol>
+      {
+        crumbs.map((crumb, index) => (
+          <li>
+            {index < crumbs.length - 1 ? <a href={crumb.href}>{crumb.label}</a> : <span aria-current="page">{crumb.label}</span>}
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+  <h1 class="rhead__title">{heading}</h1>
+</div>
+
+<div class="container rlayout">
+  <aside class="rside" id="filters" aria-label={r.filters}>
+    <div class="rside__head">
+      <p class="h-3">{r.filters}</p>
+      <a class="icon-btn" href="#results" aria-label={t.nav.close}>
+        <Icon name="x" size={22} />
+      </a>
+    </div>
+    <CategoryTree locale={locale} group={group} sub={sub} />
+    <FilterPanel locale={locale} set={subInfo?.set} />
+  </aside>
+
+  <section class="rmain" id="results" aria-labelledby="results-count">
+    <div class="rbar">
+      <p
+        class="rbar__count"
+        id="results-count"
+        aria-live="polite"
+        data-found
+        data-tpl={r.found}
+        data-tpl-query={r.foundQuery}
+      >
+        {fill(r.found, { n: fmt.number(items.length) })}
+      </p>
+
+      <div class="rbar__tools">
+        <a class="btn btn--outline rbar__filters" href="#filters">
+          <Icon name="sliders-horizontal" size={17} />
+          {r.filters}
+        </a>
+        <div class="view" role="radiogroup" aria-label={r.view}>
+          <label title={r.list}>
+            <input type="radio" name="view" id="view-list" value="list" checked />
+            <span><Icon name="list" size={17} /><span class="visually-hidden">{r.list}</span></span>
+          </label>
+          <label title={r.gallery}>
+            <input type="radio" name="view" id="view-gallery" value="gallery" />
+            <span><Icon name="layout-grid" size={17} /><span class="visually-hidden">{r.gallery}</span></span>
+          </label>
+        </div>
+        <label class="visually-hidden" for="results-sort">{r.sort}</label>
+        <select class="select rbar__sort" id="results-sort" data-sort>
+          <option value="smart">{r.sorts.smart}</option>
+          <option value="price-asc">{r.sorts.priceAsc}</option>
+          <option value="price-desc">{r.sorts.priceDesc}</option>
+          <option value="date-new">{r.sorts.dateNew}</option>
+          <option value="date-old">{r.sorts.dateOld}</option>
+        </select>
+        <button class="btn btn--outline rbar__save" type="button">
+          <Icon name="bookmark" size={17} />
+          <span>{r.saveSearch}</span>
+        </button>
+      </div>
+    </div>
+
+    {
+      items.length > 0 ? (
+        <>
+          <ResultsList locale={locale} items={items} columns={columns} />
+          <div class="empty" data-empty hidden>
+            <span class="empty__icon">
+              <Icon name="search" size={24} />
+            </span>
+            <h2 class="h-3">{r.noMatchTitle}</h2>
+            <p>{r.noMatchText}</p>
+          </div>
+          <p class="rnote">{t.home.demoNote}</p>
+        </>
+      ) : (
+        <div class="empty">
+          <span class="empty__icon">
+            <Icon name="search" size={24} />
+          </span>
+          <h2 class="h-3">{r.emptyTitle}</h2>
+          <p>{r.emptyText}</p>
+          <a class="btn btn--accent" href={link(route.post())}>
+            {t.nav.post}
+          </a>
+        </div>
+      )
+    }
+  </section>
+</div>
+
+<script>
+  import '@/scripts/results';
+</script>
+
+<style>
+  .rhead {
+    display: grid;
+    gap: var(--s-2);
+    padding-block: var(--s-4) var(--s-3);
+  }
+
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-1) var(--s-2);
+    color: var(--c-ink-3);
+    font-size: var(--fs-xs);
+  }
+
+  .crumbs li + li::before {
+    content: '/';
+    margin-inline-end: var(--s-2);
+    color: var(--c-line-strong);
+  }
+
+  .crumbs a {
+    color: var(--c-brand);
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    text-decoration: underline;
+  }
+
+  .rhead__title {
+    font-size: var(--fs-h2);
+    font-weight: 500;
+  }
+
+  .rlayout {
+    display: grid;
+    grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--s-6);
+  }
+
+  .rside {
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-3));
+    max-height: calc(100dvh - var(--header-h) - var(--s-5));
+    overflow-y: auto;
+    padding-inline-end: var(--s-2);
+    scrollbar-width: thin;
+  }
+
+  .rside__head {
+    display: none;
+  }
+
+  .rmain {
+    min-width: 0;
+  }
+
+  .rbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    padding-block-end: var(--s-3);
+  }
+
+  .rbar__count {
+    font-size: var(--fs-sm);
+    font-weight: 500;
+  }
+
+  .rbar__tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2);
+  }
+
+  .rbar__tools :global(.btn),
+  .rbar__sort {
+    min-height: 2.375rem;
+    font-size: var(--fs-xs);
+  }
+
+  .rbar__sort {
+    width: auto;
+  }
+
+  .rbar__filters {
+    display: none;
+  }
+
+  .view {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: var(--r-sm);
+    background: var(--c-surface-2);
+  }
+
+  .view label {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .view input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .view label > span {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: calc(var(--r-sm) - 2px);
+    color: var(--c-ink-3);
+  }
+
+  .view input:checked + span {
+    background: var(--c-raised);
+    color: var(--c-brand);
+    box-shadow: var(--shadow-1);
+  }
+
+  .view input:focus-visible + span {
+    outline: 2px solid var(--c-brand);
+    outline-offset: 2px;
+  }
+
+  .rnote {
+    margin-block-start: var(--s-3);
+    color: var(--c-ink-3);
+    font-size: var(--fs-2xs);
+  }
+
+  @media (max-width: 960px) {
+    .rlayout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rside {
+      display: none;
+    }
+
+    .rside:target {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: block;
+      max-height: none;
+      padding: env(safe-area-inset-top, 0px) max(var(--gutter), env(safe-area-inset-right, 0px)) 0
+        max(var(--gutter), env(safe-area-inset-left, 0px));
+      background: var(--c-bg);
+    }
+
+    .rside__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: var(--header-h);
+    }
+
+    .rbar__filters {
+      display: inline-flex;
+    }
+
+    .rbar__save span {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,32 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CategoryPicker from '@/components/search/CategoryPicker.astro';
+import { localePaths, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+
+export const getStaticPaths = localePaths;
+
+const locale = Astro.params.locale as Locale;
+const { t } = useI18n(locale);
+---
+
+<BaseLayout locale={locale} title={t.advanced.title}>
+  <div class="container narrow">
+    <header class="page-head">
+      <h1 class="h-2">{t.advanced.title}</h1>
+      <p class="muted">{t.advanced.lead}</p>
+    </header>
+    <CategoryPicker locale={locale} mode="link" />
+  </div>
+</BaseLayout>
+
+<style>
+  .narrow {
+    max-width: calc(56rem + 2 * var(--gutter));
+  }
+
+  .page-head {
+    display: grid;
+    gap: var(--s-2);
+  }
+</style>

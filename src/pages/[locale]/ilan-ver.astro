@@ -1,0 +1,129 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/ui/Icon.astro';
+import CategoryPicker from '@/components/search/CategoryPicker.astro';
+import { localePaths, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+
+export const getStaticPaths = localePaths;
+
+const locale = Astro.params.locale as Locale;
+const { t, link, fmt } = useI18n(locale);
+---
+
+<BaseLayout locale={locale} title={t.post.title} noindex>
+  <div class="container post">
+    <header class="page-head">
+      <h1 class="h-2">{t.post.title}</h1>
+      <p class="muted">{t.post.lead}</p>
+    </header>
+
+    <ol class="stepper">
+      {
+        t.post.steps.map((step, index) => (
+          <li aria-current={index === 0 ? 'step' : undefined}>
+            <span class="stepper__no">{fmt.number(index + 1)}</span>
+            <span>{step}</span>
+          </li>
+        ))
+      }
+    </ol>
+
+    <form class="post__form" action={link(route.login())} method="get">
+      <h2 class="h-3">{t.post.choose}</h2>
+      <CategoryPicker locale={locale} mode="select" />
+      <div class="post__foot">
+        <p class="small muted">{t.post.loginNote}</p>
+        <button class="btn btn--brand btn--lg" type="submit">
+          {t.post.continue}
+          <Icon name="chevron-right" size={18} flip />
+        </button>
+      </div>
+    </form>
+  </div>
+</BaseLayout>
+
+<style>
+  .post {
+    max-width: calc(56rem + 2 * var(--gutter));
+  }
+
+  .page-head {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .stepper {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-2);
+    margin-block-end: var(--s-6);
+  }
+
+  .stepper li {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-width: 0;
+    padding-block-start: var(--s-2);
+    border-block-start: 3px solid var(--c-line);
+    color: var(--c-ink-3);
+    font-size: var(--fs-xs);
+    overflow-wrap: anywhere;
+  }
+
+  .stepper li[aria-current='step'] {
+    border-color: var(--c-brand);
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+
+  .stepper__no {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--c-surface-2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stepper li[aria-current='step'] .stepper__no {
+    background: var(--c-brand);
+    color: var(--c-on-brand);
+  }
+
+  .post__form {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .post__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-block-start: var(--s-4);
+  }
+
+  .post__foot p {
+    max-width: 44ch;
+  }
+
+  @media (max-width: 640px) {
+    .stepper span:not(.stepper__no) {
+      display: none;
+    }
+
+    .stepper li[aria-current='step'] span {
+      display: inline;
+    }
+
+    .stepper {
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+    }
+  }
+</style>

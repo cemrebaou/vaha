@@ -1,0 +1,22 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ResultsPage from '@/components/search/ResultsPage.astro';
+import { useI18n } from '@/i18n';
+import { localeCodes, type Locale } from '@/i18n/config';
+import { groups, getGroup } from '@/config/categories';
+import { getListings } from '@/lib/listings';
+
+// Her dil ve her ana kategori için hazır bir sayfa üretilir.
+export function getStaticPaths() {
+  return localeCodes.flatMap((locale) => groups.map((group) => ({ params: { locale, group: group.id } })));
+}
+
+const locale = Astro.params.locale as Locale;
+const group = getGroup(Astro.params.group as string);
+const { L } = useI18n(locale);
+const name = L(group.name);
+---
+
+<BaseLayout locale={locale} title={name}>
+  <ResultsPage locale={locale} items={getListings({ group: group.id })} heading={name} group={group.id} />
+</BaseLayout>

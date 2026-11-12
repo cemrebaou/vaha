@@ -4,11 +4,13 @@
  */
 export const route = {
   home: () => '',
+  /** Sorgu eklemek için: `${link(route.search())}?d=2` */
   search: () => 'search',
-  categories: () => 'categories',
-  category: (id: string) => `c/${id}`,
-  listing: (id: string) => `listing/${id}`,
-  post: () => 'post',
-  login: () => 'login',
-  favorites: () => 'favorites',
+  advanced: () => 'detayli-arama',
+  group: (group: string) => `c/${group}`,
+  sub: (group: string, sub: string) => `c/${group}/${sub}`,
+  listing: (id: string) => `ilan/${id}`,
+  post: () => 'ilan-ver',
+  login: () => 'giris',
+  favorites: () => 'favoriler',
 } as const;

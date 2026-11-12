@@ -3,7 +3,7 @@ import Logo from '@/components/ui/Logo.astro';
 import { fill, useI18n } from '@/i18n';
 import { locales, type Locale } from '@/i18n/config';
 import { route } from '@/config/routes';
-import { categories, categoryText } from '@/config/categories';
+import { groups } from '@/config/categories';
 
 interface Props {
   locale: Locale;
@@ -11,7 +11,7 @@ interface Props {
 }
 
 const { locale, alternates } = Astro.props;
-const { t, link } = useI18n(locale);
+const { t, L, link } = useI18n(locale);
 const year = new Date().getFullYear();
 ---
 
@@ -22,17 +22,16 @@ const year = new Date().getFullYear();
       <p>{t.footer.tagline}</p>
     </div>
 
-    <nav aria-label={t.footer.explore}>
+    <nav class="cats" aria-label={t.footer.explore}>
       <h2 class="col-title">{t.footer.explore}</h2>
       <ul>
         {
-          categories.slice(0, 4).map((item) => (
+          groups.map((group) => (
             <li>
-              <a href={link(route.category(item.id))}>{categoryText(t, item.id).name}</a>
+              <a href={link(route.group(group.id))}>{L(group.name)}</a>
             </li>
           ))
         }
-        <li><a href={link(route.categories())}>{t.nav.allCategories}</a></li>
       </ul>
     </nav>
 
@@ -40,8 +39,10 @@ const year = new Date().getFullYear();
       <h2 class="col-title">{t.footer.account}</h2>
       <ul>
         <li><a href={link(route.login())}>{t.nav.login}</a></li>
+        <li><a href={link(route.login())}>{t.nav.register}</a></li>
         <li><a href={link(route.post())}>{t.nav.post}</a></li>
         <li><a href={link(route.favorites())}>{t.nav.favorites}</a></li>
+        <li><a href={link(route.advanced())}>{t.nav.advanced}</a></li>
       </ul>
     </nav>
 
@@ -71,6 +72,7 @@ const year = new Date().getFullYear();
     <p>{fill(t.footer.rights, { year })}</p>
     <p>{t.footer.demo}</p>
   </div>
+  <div class="flag-strip" aria-hidden="true"></div>
 </footer>
 
 <style>
@@ -84,7 +86,7 @@ const year = new Date().getFullYear();
 
   .cols {
     display: grid;
-    grid-template-columns: 1.6fr repeat(3, 1fr);
+    grid-template-columns: 1.3fr 2fr 1fr 1fr;
     gap: var(--s-6);
     padding-block: var(--s-7);
   }
@@ -100,13 +102,18 @@ const year = new Date().getFullYear();
     margin-block-end: var(--s-3);
     color: var(--c-ink);
     font-size: var(--fs-sm);
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0;
   }
 
   ul {
     display: grid;
     gap: var(--s-2);
+  }
+
+  .cats ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-5);
   }
 
   nav a {
@@ -136,10 +143,11 @@ const year = new Date().getFullYear();
 
   @media (max-width: 860px) {
     .cols {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .about {
+    .about,
+    .cats {
       grid-column: 1 / -1;
     }
   }

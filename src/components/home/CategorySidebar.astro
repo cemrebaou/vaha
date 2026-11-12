@@ -1,0 +1,269 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { groups } from '@/config/categories';
+import { countBy } from '@/lib/listings';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { t, L, link, fmt } = useI18n(locale);
+const search = link(route.search());
+---
+
+<aside class="side" aria-label={t.nav.categories}>
+  <ul class="quick">
+    <li>
+      <span class="quick__icon quick__icon--red"><Icon name="zap" size={15} /></span>
+      <a href={`${search}?u=1`}>{t.home.urgent}</a>
+    </li>
+    <li>
+      <span class="quick__icon"><Icon name="clock" size={15} /></span>
+      <span class="quick__links">
+        <a href={`${search}?d=2`}>{t.home.recent} {t.home.h48}</a>
+        <span aria-hidden="true">/</span>
+        <a href={`${search}?d=7`}>{t.home.w1}</a>
+        <span aria-hidden="true">/</span>
+        <a href={`${search}?d=30`}>{t.home.m1}</a>
+      </span>
+    </li>
+  </ul>
+
+  <nav class="tree">
+    {
+      groups.map((group) => {
+        const shown = group.subs.slice(0, group.visible);
+        const rest = group.subs.slice(group.visible);
+        const total = countBy(group.id);
+        return (
+          <section class="grp">
+            <h2 class="grp__head">
+              <span class="grp__icon">
+                <Icon name={group.icon} size={16} />
+              </span>
+              <a href={link(route.group(group.id))}>
+                {L(group.name)}
+                {total > 0 && <span class="count">({fmt.number(total)})</span>}
+              </a>
+              <Icon name="chevron-right" size={18} flip class="grp__chev" />
+            </h2>
+            <ul class="grp__list">
+              {shown.map((sub) => {
+                const n = countBy(group.id, sub.id);
+                return (
+                  <li>
+                    <a href={link(route.sub(group.id, sub.id))}>{L(sub.name)}</a>
+                    {n > 0 && <span class="count">({fmt.number(n)})</span>}
+                  </li>
+                );
+              })}
+            </ul>
+            {rest.length > 0 && (
+              <details class="grp__more">
+                <summary>
+                  <span class="more-open">{t.home.showAll}</span>
+                  <span class="more-close">{t.home.showLess}</span>
+                  <Icon name="chevron-down" size={16} />
+                </summary>
+                <ul class="grp__list">
+                  {rest.map((sub) => {
+                    const n = countBy(group.id, sub.id);
+                    return (
+                      <li>
+                        <a href={link(route.sub(group.id, sub.id))}>{L(sub.name)}</a>
+                        {n > 0 && <span class="count">({fmt.number(n)})</span>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </details>
+            )}
+          </section>
+        );
+      })
+    }
+  </nav>
+</aside>
+
+<style>
+  .side {
+    display: grid;
+    align-content: start;
+    gap: var(--s-2);
+    font-size: var(--fs-sm);
+  }
+
+  .quick {
+    display: grid;
+    gap: var(--s-2);
+    padding-block-end: var(--s-3);
+    border-block-end: 1px solid var(--c-line);
+  }
+
+  .quick li {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+
+  .quick__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 50%;
+    background: var(--c-surface-2);
+    color: var(--c-ink-2);
+  }
+
+  .quick__icon--red {
+    background: var(--c-accent-soft);
+    color: var(--c-accent);
+  }
+
+  .quick__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--s-1);
+    color: var(--c-ink-3);
+  }
+
+  .quick a,
+  .grp__list a {
+    color: var(--c-brand);
+    text-decoration: none;
+  }
+
+  .quick a:hover,
+  .grp__list a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .grp {
+    padding-block: var(--s-3);
+    border-block-end: 1px solid var(--c-line);
+  }
+
+  .grp__head {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    margin-block-end: var(--s-2);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: 0;
+    line-height: 1.35;
+  }
+
+  .grp__head a {
+    flex: 1;
+    color: var(--c-ink);
+    text-decoration: none;
+  }
+
+  .grp__head a:hover {
+    color: var(--c-brand);
+  }
+
+  .grp__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 50%;
+    background: var(--c-brand-soft);
+    color: var(--c-brand);
+  }
+
+  .grp__head :global(.grp__chev) {
+    display: none;
+    color: var(--c-ink-3);
+  }
+
+  .grp__list {
+    display: grid;
+    gap: 0.3rem;
+    padding-inline-start: 2.125rem;
+  }
+
+  .count {
+    margin-inline-start: 0.3rem;
+    color: var(--c-ink-3);
+    font-size: var(--fs-2xs);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .grp__more summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-1);
+    margin-block-start: 0.3rem;
+    margin-inline-start: 2.125rem;
+    color: var(--c-ink-2);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .grp__more summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .grp__more summary:hover {
+    color: var(--c-brand);
+  }
+
+  .grp__more[open] summary {
+    order: 2;
+  }
+
+  .grp__more[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .grp__more[open] .grp__list {
+    margin-block-start: 0.3rem;
+  }
+
+  .grp__more[open] summary :global(.icon) {
+    transform: rotate(180deg);
+  }
+
+  .more-close,
+  .grp__more[open] .more-open {
+    display: none;
+  }
+
+  .grp__more[open] .more-close {
+    display: inline;
+  }
+
+  /* Telefonda yalnızca ana kategoriler; dokununca kategori sayfası açılır. */
+  @media (max-width: 860px) {
+    .grp {
+      padding-block: 0;
+    }
+
+    .grp__head {
+      min-height: 3rem;
+      margin: 0;
+    }
+
+    .grp__head :global(.grp__chev) {
+      display: block;
+    }
+
+    .grp__list,
+    .grp__more {
+      display: none;
+    }
+  }
+</style>

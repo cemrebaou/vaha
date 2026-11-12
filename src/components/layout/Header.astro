@@ -4,7 +4,7 @@ import Logo from '@/components/ui/Logo.astro';
 import { useI18n } from '@/i18n';
 import { locales, type Locale } from '@/i18n/config';
 import { route } from '@/config/routes';
-import { categories, categoryText } from '@/config/categories';
+import { groups } from '@/config/categories';
 import { currencies, defaultCurrency } from '@/config/currencies';
 
 interface Props {
@@ -14,43 +14,41 @@ interface Props {
 }
 
 const { locale, alternates } = Astro.props;
-const { t, meta, link } = useI18n(locale);
-
-const path = Astro.url.pathname;
-const current = (target: string) => (path.startsWith(target) ? 'page' : undefined);
-
-// Üst menüde yalnızca en çok aranan iki kategori durur; gerisi "Tüm kategoriler"de açılır.
-const primary = categories.slice(0, 2).map((item) => ({
-  label: categoryText(t, item.id).name,
-  href: link(route.category(item.id)),
-}));
-const allCategories = link(route.categories());
+const { t, L, meta, link } = useI18n(locale);
 ---
 
 <header class="site-header">
+  <div class="flag-strip" aria-hidden="true"></div>
   <div class="container bar">
     <Logo name={t.site.name} href={link(route.home())} />
 
-    <nav class="primary" aria-label={t.nav.main}>
-      {primary.map((item) => <a href={item.href} aria-current={current(item.href)}>{item.label}</a>)}
-      <a href={allCategories} aria-current={current(allCategories)}>{t.nav.allCategories}</a>
-    </nav>
+    <form class="hsearch" action={link(route.search())} method="get" role="search" aria-label={t.nav.searchLabel}>
+      <input
+        class="hsearch__input"
+        type="search"
+        id="header-q"
+        name="q"
+        placeholder={t.nav.searchPlaceholder}
+        aria-label={t.nav.searchLabel}
+        autocomplete="off"
+        enterkeyhint="search"
+      />
+      <button class="hsearch__btn" type="submit" aria-label={t.nav.search}>
+        <Icon name="search" size={19} />
+      </button>
+    </form>
+
+    <a class="hlink only-desktop" href={link(route.advanced())}>{t.nav.advanced}</a>
 
     <div class="actions">
-      <button class="btn btn--ghost prefs-btn" type="button" popovertarget="prefs" aria-label={t.nav.prefs}>
-        <Icon name="globe" size={18} />
+      <button class="hlink prefs-btn" type="button" popovertarget="prefs" aria-label={t.nav.prefs}>
+        <Icon name="globe" size={17} />
         <span>{meta.short}</span>
-        <span class="prefs-btn__sep" aria-hidden="true"></span>
-        <span>{defaultCurrency}</span>
       </button>
-      <a class="icon-btn only-desktop" href={link(route.favorites())} aria-label={t.nav.favorites}>
-        <Icon name="heart" />
-      </a>
-      <a class="btn btn--ghost only-desktop" href={link(route.login())}>{t.nav.login}</a>
-      <a class="btn btn--accent only-desktop" href={link(route.post())}>
-        <Icon name="plus" size={18} />
-        {t.nav.post}
-      </a>
+      <a class="hlink only-desktop" href={link(route.login())}>{t.nav.login}</a>
+      <span class="sep only-desktop" aria-hidden="true"></span>
+      <a class="hlink only-desktop" href={link(route.login())}>{t.nav.register}</a>
+      <a class="btn btn--accent only-desktop post-btn" href={link(route.post())}>{t.nav.post}</a>
       <button class="icon-btn only-mobile" type="button" popovertarget="mobile-menu" aria-label={t.nav.menu}>
         <Icon name="menu" size={24} />
       </button>
@@ -58,7 +56,7 @@ const allCategories = link(route.categories());
   </div>
 </header>
 
-<!-- Dil ve para birimi: düğmeye basınca açılır, ana sayfada yer kaplamaz. -->
+<!-- Dil ve para birimi: düğmeye basınca açılır, sayfada yer kaplamaz. -->
 <div class="prefs" id="prefs" popover>
   <p class="prefs__title">{t.nav.language}</p>
   <ul class="prefs__list">
@@ -113,23 +111,30 @@ const allCategories = link(route.categories());
   <nav class="container mmenu__nav" aria-label={t.nav.main}>
     <ul>
       {
-        categories.map((item) => (
+        groups.map((group) => (
           <li>
-            <a href={link(route.category(item.id))}>
-              <Icon name={item.icon} size={22} />
-              <span>{categoryText(t, item.id).name}</span>
+            <a href={link(route.group(group.id))}>
+              <Icon name={group.icon} size={20} />
+              <span>{L(group.name)}</span>
               <Icon name="chevron-right" size={18} flip />
             </a>
           </li>
         ))
       }
+      <li>
+        <a href={link(route.advanced())}>
+          <Icon name="sliders-horizontal" size={20} />
+          <span>{t.nav.advanced}</span>
+          <Icon name="chevron-right" size={18} flip />
+        </a>
+      </li>
     </ul>
     <div class="mmenu__cta">
-      <a class="btn btn--accent btn--lg btn--block" href={link(route.post())}>
-        <Icon name="plus" size={18} />
-        {t.nav.post}
-      </a>
-      <a class="btn btn--outline btn--lg btn--block" href={link(route.login())}>{t.nav.login}</a>
+      <a class="btn btn--accent btn--lg btn--block" href={link(route.post())}>{t.nav.post}</a>
+      <div class="mmenu__row">
+        <a class="btn btn--outline btn--lg btn--block" href={link(route.login())}>{t.nav.login}</a>
+        <a class="btn btn--outline btn--lg btn--block" href={link(route.login())}>{t.nav.register}</a>
+      </div>
     </div>
   </nav>
 </div>
@@ -140,60 +145,98 @@ const allCategories = link(route.categories());
     top: env(safe-area-inset-top, 0px);
     z-index: 50;
     border-block-end: 1px solid var(--c-line);
-    background: color-mix(in srgb, var(--c-bg) 86%, transparent);
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
-    backdrop-filter: saturate(1.4) blur(14px);
+    background: var(--c-bg);
   }
 
   .bar {
     display: flex;
     align-items: center;
-    gap: var(--s-5);
+    gap: var(--s-4);
     height: var(--header-h);
   }
 
-  .primary {
+  .hsearch {
     display: flex;
-    gap: var(--s-1);
+    flex: 1;
+    max-width: 30rem;
+    min-width: 0;
+    height: 2.5rem;
+    border: 1.5px solid var(--c-line-strong);
+    border-radius: var(--r-sm);
+    background: var(--c-bg);
+    transition: border-color 0.15s var(--ease);
   }
 
-  .primary a {
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--r-sm);
+  .hsearch:focus-within {
+    border-color: var(--c-brand);
+  }
+
+  .hsearch__input {
+    flex: 1;
+    min-width: 0;
+    padding-inline: var(--s-3);
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: var(--fs-sm);
+  }
+
+  .hsearch__input::placeholder {
+    color: var(--c-ink-3);
+  }
+
+  .hsearch__btn {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    border: 0;
+    border-inline-start: 1px solid var(--c-line);
+    background: transparent;
     color: var(--c-ink-2);
+  }
+
+  .hsearch__btn:hover {
+    color: var(--c-brand);
+  }
+
+  .hlink {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-1);
+    padding: 0.375rem 0.25rem;
+    border: 0;
+    background: none;
+    color: var(--c-ink);
     font-size: var(--fs-sm);
     font-weight: 500;
     text-decoration: none;
-    transition:
-      background-color 0.15s var(--ease),
-      color 0.15s var(--ease);
+    white-space: nowrap;
   }
 
-  .primary a:hover {
-    background: var(--c-surface);
-    color: var(--c-ink);
-  }
-
-  .primary a[aria-current='page'] {
+  .hlink:hover {
     color: var(--c-brand);
   }
 
   .actions {
     display: flex;
     align-items: center;
-    gap: var(--s-1);
+    gap: var(--s-3);
     margin-inline-start: auto;
   }
 
   .prefs-btn {
-    padding-inline: 0.75rem;
     color: var(--c-ink-2);
   }
 
-  .prefs-btn__sep {
+  .sep {
     width: 1px;
-    height: 0.875rem;
+    height: 1rem;
     background: var(--c-line-strong);
+  }
+
+  .post-btn {
+    min-height: 2.5rem;
+    margin-inline-start: var(--s-2);
   }
 
   .only-mobile {
@@ -204,7 +247,7 @@ const allCategories = link(route.categories());
   .prefs {
     position: fixed;
     inset: auto;
-    inset-block-start: calc(var(--header-h) + env(safe-area-inset-top, 0px) + var(--s-2));
+    inset-block-start: calc(var(--header-h) + 4px + env(safe-area-inset-top, 0px) + var(--s-2));
     inset-inline-end: max(var(--gutter), calc((100vw - var(--container)) / 2));
     width: min(19rem, calc(100vw - 2rem));
     margin: 0;
@@ -329,19 +372,22 @@ const allCategories = link(route.categories());
   }
 
   .mmenu__nav {
-    padding-block: var(--s-3) var(--s-6);
+    padding-block: var(--s-2) var(--s-6);
   }
 
   .mmenu__nav li a {
     display: flex;
     align-items: center;
     gap: var(--s-3);
-    min-height: 3.5rem;
+    min-height: 3.25rem;
     border-block-end: 1px solid var(--c-line);
     color: var(--c-ink);
-    font-size: 1.0625rem;
     font-weight: 500;
     text-decoration: none;
+  }
+
+  .mmenu__nav li a :global(.icon:first-child) {
+    color: var(--c-brand);
   }
 
   .mmenu__nav li a span {
@@ -354,8 +400,13 @@ const allCategories = link(route.categories());
     margin-block-start: var(--s-5);
   }
 
-  @media (max-width: 860px) {
-    .primary,
+  .mmenu__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-3);
+  }
+
+  @media (max-width: 960px) {
     .only-desktop {
       display: none;
     }
@@ -364,7 +415,25 @@ const allCategories = link(route.categories());
       display: inline-grid;
     }
 
+    .bar {
+      flex-wrap: wrap;
+      height: auto;
+      row-gap: var(--s-2);
+      padding-block: var(--s-2) var(--s-3);
+    }
+
+    .hsearch {
+      order: 3;
+      flex-basis: 100%;
+      max-width: none;
+    }
+
+    .actions {
+      gap: var(--s-1);
+    }
+
     .prefs {
+      inset-block-start: calc(var(--header-h) + var(--s-2));
       inset-inline-end: 1rem;
     }
   }

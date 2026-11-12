@@ -1,0 +1,115 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import type { IconName } from '@/components/ui/icons';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { t, link } = useI18n(locale);
+const tools = t.home.tools;
+
+// Hizmet sayfaları henüz yok; şimdilik ilgili kategoriye gider.
+const sections: { title: string; href: string; items: { icon: IconName; label: string }[] }[] = [
+  {
+    title: t.home.motorsTools,
+    href: link(route.group('vasita')),
+    items: [
+      { icon: 'trending-up', label: tools.valuation },
+      { icon: 'arrow-left-right', label: tools.compare },
+      { icon: 'file-search', label: tools.history },
+      { icon: 'shield-check', label: tools.inspection },
+      { icon: 'percent', label: tools.carLoan },
+      { icon: 'sparkles', label: tools.newCars },
+    ],
+  },
+  {
+    title: t.home.propertyTools,
+    href: link(route.group('emlak')),
+    items: [
+      { icon: 'user-search', label: tools.findAgent },
+      { icon: 'trending-up', label: tools.priceIndex },
+      { icon: 'calculator', label: tools.appraisal },
+      { icon: 'percent', label: tools.mortgage },
+      { icon: 'book-open', label: tools.buyGuide },
+      { icon: 'book-open', label: tools.rentGuide },
+    ],
+  },
+];
+---
+
+{
+  sections.map((section) => (
+    <section class="svc">
+      <h2 class="svc__title">{section.title}</h2>
+      <ul class="svc__list">
+        {section.items.map((entry) => (
+          <li>
+            <a href={section.href}>
+              <Icon name={entry.icon} size={20} />
+              <span>{entry.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))
+}
+
+<style>
+  .svc {
+    margin-block-start: var(--s-6);
+  }
+
+  .svc__title {
+    padding-block-end: var(--s-2);
+    border-block-end: 1px solid var(--c-line);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .svc__list {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--s-3);
+    margin-block-start: var(--s-3);
+  }
+
+  .svc__list a {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 2.75rem;
+    color: var(--c-brand);
+    font-size: var(--fs-xs);
+    line-height: 1.3;
+    text-decoration: none;
+  }
+
+  .svc__list a:hover span {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .svc__list :global(.icon) {
+    flex: none;
+    color: var(--c-ink-2);
+  }
+
+  @media (max-width: 1080px) {
+    .svc__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 520px) {
+    .svc__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

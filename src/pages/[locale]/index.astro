@@ -1,19 +1,18 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import Hero from '@/components/home/Hero.astro';
-import CategoryGrid from '@/components/home/CategoryGrid.astro';
-import FeaturedListings from '@/components/home/FeaturedListings.astro';
-import Areas from '@/components/home/Areas.astro';
-import HowItWorks from '@/components/home/HowItWorks.astro';
-import PostCta from '@/components/home/PostCta.astro';
+import CategorySidebar from '@/components/home/CategorySidebar.astro';
+import ServiceLinks from '@/components/home/ServiceLinks.astro';
+import Tile from '@/components/listing/Tile.astro';
 import { localePaths, useI18n } from '@/i18n';
 import type { Locale } from '@/i18n/config';
 import { route } from '@/config/routes';
+import { getShowcase } from '@/lib/listings';
 
 export const getStaticPaths = localePaths;
 
 const locale = Astro.params.locale as Locale;
 const { t, link } = useI18n(locale);
+const showcase = getShowcase();
 
 // Arama motorlarına sitenin ne olduğunu ve arama kutusunu tanıtır.
 const absolute = (value: string) => new URL(value, Astro.site).href;
@@ -33,10 +32,99 @@ const schema = {
 
 <BaseLayout locale={locale}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
-  <Hero locale={locale} />
-  <CategoryGrid locale={locale} />
-  <FeaturedListings locale={locale} />
-  <Areas locale={locale} />
-  <HowItWorks locale={locale} />
-  <PostCta locale={locale} />
+  <div class="container home">
+    <CategorySidebar locale={locale} />
+
+    <div class="home__main">
+      <section aria-labelledby="showcase-title">
+        <div class="home__head">
+          <h1 class="home__title" id="showcase-title">{t.home.showcase}</h1>
+          <a class="home__all" href={link(route.search())}>{t.home.showcaseAll}</a>
+        </div>
+        <ul class="showcase">
+          {
+            showcase.map((item) => (
+              <li>
+                <Tile locale={locale} item={item} />
+              </li>
+            ))
+          }
+        </ul>
+        <p class="home__note">{t.home.demoNote}</p>
+      </section>
+
+      <ServiceLinks locale={locale} />
+    </div>
+  </div>
 </BaseLayout>
+
+<style>
+  .home {
+    display: grid;
+    grid-template-columns: var(--sidebar) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--s-6);
+    padding-block-start: var(--s-5);
+  }
+
+  .home__main {
+    min-width: 0;
+  }
+
+  .home__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-1) var(--s-4);
+    padding-block-end: var(--s-2);
+    margin-block-end: var(--s-3);
+    border-block-end: 1px solid var(--c-line);
+  }
+
+  .home__title {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .home__all {
+    color: var(--c-brand);
+    font-size: var(--fs-xs);
+    text-decoration: none;
+  }
+
+  .home__all:hover {
+    text-decoration: underline;
+  }
+
+  .showcase {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--s-4) var(--s-3);
+  }
+
+  .home__note {
+    margin-block-start: var(--s-4);
+    color: var(--c-ink-3);
+    font-size: var(--fs-2xs);
+  }
+
+  @media (max-width: 1180px) {
+    .showcase {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 860px) {
+    .home {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-5);
+      padding-block-start: var(--s-3);
+    }
+
+    .showcase {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>
