@@ -13,12 +13,12 @@ Sitenin tek gösterişli öğesi **meşrebiye kafesi**: geleneksel Körfez evler
 | Token | Açık tema | Görev |
 | --- | --- | --- |
 | `--c-bg` | `#ffffff` | Sayfa zemini |
-| `--c-surface` | `#f3f7f7` | Bölüm ve kutu zemini |
-| `--c-ink` | `#0c2530` | Ana metin |
-| `--c-ink-2` | `#48606a` | İkincil metin |
-| `--c-brand` | `#0a6c74` | Marka: bağlantı, birincil düğme |
-| `--c-accent` | `#f4b740` | Yalnızca "İlan ver" eylemi |
-| `--c-line` | `#dae4e5` | Çizgi ve kenarlık |
+| `--c-surface` | `#f5f9fa` | Bölüm ve kutu zemini |
+| `--c-ink` | `#1e3a46` | Ana metin |
+| `--c-ink-2` | `#557079` | İkincil metin |
+| `--c-brand` | `#167a80` | Marka: bağlantı, birincil düğme |
+| `--c-accent` | `#f6c453` | Yalnızca "İlan ver" eylemi |
+| `--c-line` | `#e3ecee` | Çizgi ve kenarlık |
 
 Site bilinçli olarak her zaman açık temadadır (beyaz ağırlıklı, ferah). Cihaz karanlık modda olsa da aynı görünür.
 
