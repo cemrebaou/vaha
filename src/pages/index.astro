@@ -1,0 +1,31 @@
+---
+/**
+ * Kök adres (/) yalnızca yönlendirir: ziyaretçinin daha önce seçtiği dile,
+ * seçim yoksa varsayılan dile. İleride tarayıcı diline göre seçim de buraya eklenir.
+ */
+import { defaultLocale, localeCodes } from '@/i18n/config';
+import { site } from '@/config/site';
+import { href } from '@/lib/url';
+
+const target = href(defaultLocale);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const key = `${site.storagePrefix}:locale`;
+
+const redirect = `(function(){var s=${JSON.stringify(localeCodes)},l=${JSON.stringify(defaultLocale)};try{var p=localStorage.getItem(${JSON.stringify(key)});if(p&&s.indexOf(p)>-1)l=p}catch(e){}location.replace(${JSON.stringify(base)}+'/'+l+'/')})();`;
+---
+
+<!doctype html>
+<html lang={defaultLocale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{site.name}</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={new URL(target, Astro.site).href} />
+    <script is:inline set:html={redirect} />
+    <noscript><meta http-equiv="refresh" content={`0; url=${target}`} /></noscript>
+  </head>
+  <body>
+    <a href={target}>{site.name}</a>
+  </body>
+</html>

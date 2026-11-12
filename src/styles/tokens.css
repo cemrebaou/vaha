@@ -1,0 +1,85 @@
+/*
+ * Tasarım tokenları. Sitedeki her renk, ölçü ve yazı kararı buradan gelir.
+ * Yerleşim: başlangıca hizalı tek sütun akışı, 1200px kapsayıcı.
+ * Cesaret tek yerde: körfez ışığını süzen meşrebiye kafesi. Geri kalan her şey sakin.
+ * Site bilinçli olarak her zaman açık temadadır: beyaz ağırlıklı, ferah, sakin.
+ */
+:root {
+  color-scheme: light;
+
+  /* Renk: bol beyaz, sabah denizi yeşili marka rengi, yumuşak safran eylem rengi */
+  --c-bg: #ffffff;
+  --c-surface: #f5f9fa;
+  --c-surface-2: #eaf3f4;
+  --c-raised: #ffffff;
+  --c-ink: #1e3a46;
+  --c-ink-2: #557079;
+  --c-ink-3: #627a83;
+  --c-line: #e3ecee;
+  --c-line-strong: #c9d8db;
+  --c-brand: #167a80;
+  --c-brand-strong: #10646a;
+  --c-brand-soft: #e6f4f4;
+  --c-on-brand: #ffffff;
+  --c-accent: #f6c453;
+  --c-accent-strong: #f0b73a;
+  --c-on-accent: #3a2a00;
+  --c-success: #2a8a5c;
+  --c-danger: #c2483f;
+  --c-scrim: rgb(30 58 70 / 0.35);
+  --shadow-rgb: 30 58 70;
+
+  /* Fotoğraf yer tutucuları: körfez, kum, sabah göğü, gün doğumu */
+  --ph-1a: #d9eeed;
+  --ph-1b: #f1f8f6;
+  --ph-2a: #f8e9cb;
+  --ph-2b: #fdf7ec;
+  --ph-3a: #dfe6f3;
+  --ph-3b: #f3f5fa;
+  --ph-4a: #f6ddd2;
+  --ph-4b: #fcf1ec;
+  --ph-ink: rgb(30 58 70 / 0.2);
+
+  /* Yazı: Latin ve Arapçayı tek ailede taşıyan Readex Pro */
+  --font-sans: 'Readex Pro Variable', 'Segoe UI', system-ui, -apple-system, 'Noto Sans Arabic',
+    sans-serif;
+  --fs-display: clamp(2.125rem, 1.35rem + 3.6vw, 4rem);
+  --fs-h2: clamp(1.5rem, 1.25rem + 1.1vw, 2.125rem);
+  --fs-h3: 1.125rem;
+  --fs-body: 1rem;
+  --fs-sm: 0.875rem;
+  --fs-xs: 0.8125rem;
+
+  /* Boşluk ölçeği (4px tabanlı) */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+
+  /* Köşe: role göre, her şeye aynı değil */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-pill: 999px;
+
+  /* Yerleşim */
+  --container: 75rem;
+  --gutter: clamp(1rem, 4vw, 2rem);
+  --header-h: 4rem;
+  --tabbar-h: 4rem;
+
+  /* Hareket ve gölge */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --shadow-1: 0 1px 2px rgb(var(--shadow-rgb) / 0.05), 0 2px 8px -2px rgb(var(--shadow-rgb) / 0.06);
+  --shadow-2: 0 2px 4px rgb(var(--shadow-rgb) / 0.04),
+    0 16px 40px -16px rgb(var(--shadow-rgb) / 0.16);
+
+  /* Meşrebiye kafesi: sekiz köşeli yıldız örgüsü. Maske olarak kullanılır, rengi tokenlardan alır. */
+  --lattice: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56' fill='none' stroke='%23000' stroke-width='1'%3E%3Crect x='8.2' y='8.2' width='39.6' height='39.6'/%3E%3Cpath d='M28 0L56 28L28 56L0 28Z'/%3E%3C/svg%3E");
+}

@@ -1,0 +1,475 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/ui/Icon.astro';
+import PhotoPlaceholder from '@/components/listing/PhotoPlaceholder.astro';
+import { fill, useI18n } from '@/i18n';
+import { localeCodes, type Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { getCategory, categoryText } from '@/config/categories';
+import { areaName } from '@/config/areas';
+import { getListing, getListings } from '@/lib/listings';
+import { listingFacts } from '@/lib/listingFacts';
+
+export function getStaticPaths() {
+  return localeCodes.flatMap((locale) =>
+    getListings().map((item) => ({ params: { locale, id: item.id } })),
+  );
+}
+
+const locale = Astro.params.locale as Locale;
+const item = getListing(Astro.params.id as string)!;
+const { t, link, fmt } = useI18n(locale);
+const l = t.listing;
+
+const category = getCategory(item.category);
+const text = categoryText(t, item.category);
+const title = item.title[locale];
+const area = areaName(item.area, locale);
+const facts = listingFacts(item, t, fmt);
+const deal = item.deal === 'sale' ? t.search.sale : item.deal === 'rent' ? t.search.rent : null;
+const posted = item.daysAgo === 0 ? l.today : fill(l.daysAgo, { n: item.daysAgo });
+
+const rows = [
+  { label: l.facts.category, value: text.subs[item.sub] ?? text.name },
+  ...(deal ? [{ label: l.facts.deal, value: deal }] : []),
+  ...facts.map((fact) => ({ label: fact.label, value: fact.text })),
+  { label: l.facts.area, value: area },
+  { label: l.facts.posted, value: posted },
+  { label: l.facts.id, value: item.id.toUpperCase() },
+  // Dubai'de emlak ilanları resmî izin numarasıyla yayınlanır; alanı şimdiden hazır.
+  ...(item.category === 'property' ? [{ label: l.facts.permit, value: '—' }] : []),
+];
+
+const sideTones = [((item.tone % 4) + 1) as 1 | 2 | 3 | 4, (((item.tone + 1) % 4) + 1) as 1 | 2 | 3 | 4];
+---
+
+<BaseLayout locale={locale} title={title}>
+  <div class="container detail">
+    <nav class="crumbs" aria-label={t.nav.categories}>
+      <ol>
+        <li><a href={link(route.home())}>{t.nav.home}</a></li>
+        <li><a href={link(route.category(item.category))}>{text.name}</a></li>
+        <li aria-current="page">{title}</li>
+      </ol>
+    </nav>
+
+    <div class="gallery">
+      <PhotoPlaceholder
+        tone={item.tone}
+        icon={category.icon}
+        label={l.photoSlot}
+        ratio="16 / 10"
+        class="gallery__main"
+      />
+      <div class="gallery__side">
+        {sideTones.map((tone) => <PhotoPlaceholder tone={tone} label={l.photoSlot} ratio="16 / 10" />)}
+      </div>
+    </div>
+
+    <div class="detail__grid">
+      <div class="detail__main">
+        <header class="detail__head">
+          {
+            (deal || item.verified) && (
+              <div class="detail__badges">
+                {deal && <span class="badge detail__badge">{deal}</span>}
+                {item.verified && (
+                  <span class="badge detail__badge badge--verified">
+                    <Icon name="badge-check" size={14} />
+                    {l.verified}
+                  </span>
+                )}
+              </div>
+            )
+          }
+          <h1 class="h-2">{title}</h1>
+          <p class="detail__place">
+            <Icon name="map-pin" size={18} />
+            {area}
+          </p>
+          <p class="detail__price">
+            {fmt.price(item.price)}
+            {item.period === 'year' && <span>/ {l.perYear}</span>}
+          </p>
+          <div class="detail__actions">
+            <button class="btn btn--outline" type="button" data-fav={item.id} aria-pressed="false">
+              <Icon name="heart" size={18} />
+              {l.save}
+            </button>
+            <button class="btn btn--outline" type="button">
+              <Icon name="share-2" size={18} />
+              {l.share}
+            </button>
+          </div>
+        </header>
+
+        {
+          facts.length > 0 && (
+            <ul class="keyfacts">
+              {facts.map((fact) => (
+                <li>
+                  <Icon name={fact.icon} size={22} />
+                  <span class="keyfacts__value">{fact.text}</span>
+                  <span class="keyfacts__label">{fact.label}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+
+        <section class="block">
+          <h2 class="h-3">{l.details}</h2>
+          <dl class="rows">
+            {
+              rows.map((row) => (
+                <div>
+                  <dt>{row.label}</dt>
+                  <dd>{row.value}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+
+        <section class="block">
+          <h2 class="h-3">{l.description}</h2>
+          <p class="prose">{l.descriptionText}</p>
+        </section>
+
+        <section class="block">
+          <h2 class="h-3">{l.location}</h2>
+          <div class="map">
+            <Icon name="map" size={28} />
+            <p>{l.mapSoon}</p>
+          </div>
+        </section>
+      </div>
+
+      <aside class="detail__aside">
+        <div class="panel seller">
+          <div class="seller__id">
+            <span class="seller__avatar">
+              <Icon name="circle-user" size={28} />
+            </span>
+            <div>
+              <p class="seller__name">{l.seller.name}</p>
+              <p class="small muted">{l.seller.since}</p>
+            </div>
+          </div>
+          <button class="btn btn--brand btn--lg btn--block" type="button">
+            <Icon name="phone" size={18} />
+            {l.seller.showPhone}
+          </button>
+          <button class="btn btn--outline btn--block" type="button">
+            <Icon name="message-circle" size={18} />
+            {l.seller.whatsapp}
+          </button>
+          <button class="btn btn--outline btn--block" type="button">{l.seller.message}</button>
+        </div>
+
+        <div class="panel safety">
+          <h2 class="h-3">
+            <Icon name="shield-check" size={20} />
+            {l.safetyTitle}
+          </h2>
+          <ul>
+            {l.safety.map((tip) => <li>{tip}</li>)}
+          </ul>
+          <button class="text-link report" type="button">
+            <Icon name="flag" size={16} />
+            {l.report}
+          </button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .detail {
+    display: grid;
+    gap: var(--s-5);
+    padding-block-start: var(--s-5);
+  }
+
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-1) var(--s-2);
+    color: var(--c-ink-3);
+    font-size: var(--fs-sm);
+  }
+
+  .crumbs li + li::before {
+    content: '/';
+    margin-inline-end: var(--s-2);
+    color: var(--c-line-strong);
+  }
+
+  .crumbs a {
+    color: var(--c-ink-2);
+    text-decoration: none;
+  }
+
+  .crumbs a:hover {
+    color: var(--c-brand);
+  }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: var(--s-2);
+    overflow: hidden;
+    border-radius: var(--r-xl);
+  }
+
+  .gallery__side {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .detail__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    align-items: start;
+    gap: var(--s-7);
+  }
+
+  .detail__main {
+    display: grid;
+    gap: var(--s-6);
+    min-width: 0;
+  }
+
+  .detail__head {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .detail__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+
+  .detail__badge {
+    background: var(--c-surface);
+  }
+
+  .detail__place {
+    display: flex;
+    align-items: center;
+    gap: var(--s-1);
+    color: var(--c-ink-2);
+  }
+
+  .detail__price {
+    margin-block-start: var(--s-2);
+    font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.375rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .detail__price span {
+    color: var(--c-ink-2);
+    font-size: var(--fs-body);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .detail__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    margin-block-start: var(--s-3);
+  }
+
+  .detail__actions [aria-pressed='true'] {
+    border-color: currentColor;
+    color: var(--c-danger);
+  }
+
+  .detail__actions [aria-pressed='true'] :global(.icon) {
+    fill: currentColor;
+  }
+
+  .keyfacts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: var(--s-3);
+  }
+
+  .keyfacts li {
+    display: grid;
+    gap: 2px;
+    padding: var(--s-4);
+    border-radius: var(--r-lg);
+    background: var(--c-surface);
+    color: var(--c-brand);
+  }
+
+  .keyfacts__value {
+    margin-block-start: var(--s-2);
+    color: var(--c-ink);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .keyfacts__label {
+    color: var(--c-ink-2);
+    font-size: var(--fs-xs);
+  }
+
+  .block {
+    display: grid;
+    gap: var(--s-3);
+  }
+
+  .rows {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-6);
+  }
+
+  .rows div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-block: var(--s-3);
+    border-block-end: 1px solid var(--c-line);
+    font-size: var(--fs-sm);
+  }
+
+  .rows dt {
+    color: var(--c-ink-2);
+  }
+
+  .rows dd {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+
+  .prose {
+    max-width: 65ch;
+    color: var(--c-ink-2);
+  }
+
+  .map {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--s-2);
+    min-height: 14rem;
+    border: 1px dashed var(--c-line-strong);
+    border-radius: var(--r-lg);
+    background: var(--c-surface);
+    color: var(--c-ink-3);
+    font-size: var(--fs-sm);
+  }
+
+  .detail__aside {
+    position: sticky;
+    top: calc(var(--header-h) + var(--s-4));
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .panel {
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-lg);
+    background: var(--c-raised);
+  }
+
+  .seller {
+    box-shadow: var(--shadow-1);
+  }
+
+  .seller__id {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    margin-block-end: var(--s-2);
+  }
+
+  .seller__avatar {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--c-brand-soft);
+    color: var(--c-brand);
+  }
+
+  .seller__name {
+    font-weight: 500;
+  }
+
+  .safety {
+    border: 0;
+    background: var(--c-surface);
+  }
+
+  .safety h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+
+  .safety ul {
+    display: grid;
+    gap: var(--s-2);
+    padding-inline-start: 1.125rem;
+    color: var(--c-ink-2);
+    font-size: var(--fs-sm);
+    list-style: disc;
+  }
+
+  .report {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--c-ink-2);
+  }
+
+  @media (min-width: 761px) {
+    /* Büyük fotoğraf, yandaki iki küçük fotoğrafın toplam yüksekliğine uzar. */
+    .gallery :global(.gallery__main) {
+      height: 100%;
+      aspect-ratio: auto !important;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .detail__grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-6);
+    }
+
+    .detail__aside {
+      position: static;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .gallery {
+      grid-template-columns: minmax(0, 1fr);
+      border-radius: var(--r-lg);
+    }
+
+    .gallery__side {
+      display: none;
+    }
+
+    .rows {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

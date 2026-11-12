@@ -1,0 +1,29 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { localePaths, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+
+export const getStaticPaths = localePaths;
+
+const locale = Astro.params.locale as Locale;
+const { t, link } = useI18n(locale);
+---
+
+<BaseLayout locale={locale} title={t.favorites.title} noindex>
+  <div class="container">
+    <header class="page-head">
+      <h1 class="h-2">{t.favorites.title}</h1>
+    </header>
+
+    <div class="empty">
+      <span class="empty__icon">
+        <Icon name="heart" size={24} />
+      </span>
+      <h2 class="h-3">{t.favorites.emptyTitle}</h2>
+      <p>{t.favorites.emptyText}</p>
+      <a class="btn btn--brand" href={link(route.search())}>{t.favorites.browse}</a>
+    </div>
+  </div>
+</BaseLayout>

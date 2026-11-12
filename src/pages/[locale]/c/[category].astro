@@ -1,0 +1,24 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ResultsView from '@/components/search/ResultsView.astro';
+import { useI18n } from '@/i18n';
+import { localeCodes, type Locale } from '@/i18n/config';
+import { categoryIds, categoryText, type CategoryId } from '@/config/categories';
+import { getListings } from '@/lib/listings';
+
+// Her dil ve her kategori için ayrı, hazır bir sayfa üretilir.
+export function getStaticPaths() {
+  return localeCodes.flatMap((locale) =>
+    categoryIds.map((category) => ({ params: { locale, category } })),
+  );
+}
+
+const locale = Astro.params.locale as Locale;
+const category = Astro.params.category as CategoryId;
+const { t } = useI18n(locale);
+const text = categoryText(t, category);
+---
+
+<BaseLayout locale={locale} title={text.name} description={`${text.name}: ${text.hint}`}>
+  <ResultsView locale={locale} items={getListings({ category })} heading={text.name} category={category} />
+</BaseLayout>

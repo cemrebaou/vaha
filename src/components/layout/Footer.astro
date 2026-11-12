@@ -1,0 +1,146 @@
+---
+import Logo from '@/components/ui/Logo.astro';
+import { fill, useI18n } from '@/i18n';
+import { locales, type Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { categories, categoryText } from '@/config/categories';
+
+interface Props {
+  locale: Locale;
+  alternates: { locale: Locale; href: string }[];
+}
+
+const { locale, alternates } = Astro.props;
+const { t, link } = useI18n(locale);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container cols">
+    <div class="about">
+      <Logo name={t.site.name} href={link(route.home())} />
+      <p>{t.footer.tagline}</p>
+    </div>
+
+    <nav aria-label={t.footer.explore}>
+      <h2 class="col-title">{t.footer.explore}</h2>
+      <ul>
+        {
+          categories.slice(0, 4).map((item) => (
+            <li>
+              <a href={link(route.category(item.id))}>{categoryText(t, item.id).name}</a>
+            </li>
+          ))
+        }
+        <li><a href={link(route.categories())}>{t.nav.allCategories}</a></li>
+      </ul>
+    </nav>
+
+    <nav aria-label={t.footer.account}>
+      <h2 class="col-title">{t.footer.account}</h2>
+      <ul>
+        <li><a href={link(route.login())}>{t.nav.login}</a></li>
+        <li><a href={link(route.post())}>{t.nav.post}</a></li>
+        <li><a href={link(route.favorites())}>{t.nav.favorites}</a></li>
+      </ul>
+    </nav>
+
+    <nav aria-label={t.footer.language}>
+      <h2 class="col-title">{t.footer.language}</h2>
+      <ul>
+        {
+          alternates.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                hreflang={locales[item.locale].hreflang}
+                lang={item.locale}
+                data-set-locale={item.locale}
+                aria-current={item.locale === locale ? 'true' : undefined}
+              >
+                {locales[item.locale].label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+
+  <div class="container bottom">
+    <p>{fill(t.footer.rights, { year })}</p>
+    <p>{t.footer.demo}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-block-start: var(--s-8);
+    border-block-start: 1px solid var(--c-line);
+    background: var(--c-surface);
+    color: var(--c-ink-2);
+    font-size: var(--fs-sm);
+  }
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: var(--s-6);
+    padding-block: var(--s-7);
+  }
+
+  .about {
+    display: grid;
+    align-content: start;
+    gap: var(--s-3);
+    max-width: 30ch;
+  }
+
+  .col-title {
+    margin-block-end: var(--s-3);
+    color: var(--c-ink);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  ul {
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  nav a {
+    color: var(--c-ink-2);
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--c-brand);
+  }
+
+  nav a[aria-current='true'] {
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+
+  .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--s-2) var(--s-5);
+    padding-block: var(--s-4);
+    border-block-start: 1px solid var(--c-line);
+    color: var(--c-ink-3);
+    font-size: var(--fs-xs);
+  }
+
+  @media (max-width: 860px) {
+    .cols {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .about {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

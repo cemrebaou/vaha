@@ -1,0 +1,106 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import type { IconName } from '@/components/ui/icons';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { t, link } = useI18n(locale);
+const path = Astro.url.pathname;
+
+// Telefonda başparmağın ulaştığı yerde beş temel işlem.
+const tabs: { label: string; href: string; icon: IconName; post?: boolean }[] = [
+  { label: t.nav.home, href: link(route.home()), icon: 'house' },
+  { label: t.nav.search, href: link(route.search()), icon: 'search' },
+  { label: t.nav.post, href: link(route.post()), icon: 'plus', post: true },
+  { label: t.nav.favorites, href: link(route.favorites()), icon: 'heart' },
+  { label: t.nav.account, href: link(route.login()), icon: 'circle-user' },
+];
+---
+
+<nav class="tabbar" aria-label={t.nav.main}>
+  {
+    tabs.map((tab) => (
+      <a
+        class:list={['tab', { 'tab--post': tab.post }]}
+        href={tab.href}
+        aria-current={path === tab.href ? 'page' : undefined}
+      >
+        <span class="tab__icon">
+          <Icon name={tab.icon} size={22} />
+        </span>
+        <span class="tab__label">{tab.label}</span>
+      </a>
+    ))
+  }
+</nav>
+
+<style>
+  .tabbar {
+    display: none;
+  }
+
+  @media (max-width: 860px) {
+    .tabbar {
+      position: fixed;
+      inset-inline: 0;
+      inset-block-end: 0;
+      z-index: 40;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      padding-left: env(safe-area-inset-left, 0px);
+      padding-right: env(safe-area-inset-right, 0px);
+      border-block-start: 1px solid var(--c-line);
+      background: color-mix(in srgb, var(--c-bg) 92%, transparent);
+      -webkit-backdrop-filter: saturate(1.4) blur(14px);
+      backdrop-filter: saturate(1.4) blur(14px);
+    }
+  }
+
+  .tab {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 2px;
+    min-width: 0;
+    color: var(--c-ink-3);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .tab[aria-current='page'] {
+    color: var(--c-brand);
+  }
+
+  .tab__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tab--post {
+    color: var(--c-ink);
+  }
+
+  .tab--post .tab__icon {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-block-start: -1.25rem;
+    border-radius: 50%;
+    background: var(--c-accent);
+    color: var(--c-on-accent);
+    box-shadow: var(--shadow-1);
+  }
+</style>

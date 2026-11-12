@@ -1,0 +1,42 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/home/Hero.astro';
+import CategoryGrid from '@/components/home/CategoryGrid.astro';
+import FeaturedListings from '@/components/home/FeaturedListings.astro';
+import Areas from '@/components/home/Areas.astro';
+import HowItWorks from '@/components/home/HowItWorks.astro';
+import PostCta from '@/components/home/PostCta.astro';
+import { localePaths, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+
+export const getStaticPaths = localePaths;
+
+const locale = Astro.params.locale as Locale;
+const { t, link } = useI18n(locale);
+
+// Arama motorlarına sitenin ne olduğunu ve arama kutusunu tanıtır.
+const absolute = (value: string) => new URL(value, Astro.site).href;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: t.site.name,
+  url: absolute(link(route.home())),
+  inLanguage: locale,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${absolute(link(route.search()))}?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+};
+---
+
+<BaseLayout locale={locale}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(schema)} />
+  <Hero locale={locale} />
+  <CategoryGrid locale={locale} />
+  <FeaturedListings locale={locale} />
+  <Areas locale={locale} />
+  <HowItWorks locale={locale} />
+  <PostCta locale={locale} />
+</BaseLayout>

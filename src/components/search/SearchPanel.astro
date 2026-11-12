@@ -1,0 +1,277 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { categories, categoryText } from '@/config/categories';
+import { areas, areaName } from '@/config/areas';
+import { defaultCurrency } from '@/config/currencies';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { t, link } = useI18n(locale);
+const s = t.search;
+---
+
+<form class="search" action={link(route.search())} method="get" role="search" aria-label={s.label}>
+  <div class="search__bar">
+    <label class="search__field search__field--keyword" for="search-q">
+      <Icon name="search" size={22} />
+      <span class="search__label">{s.keyword}</span>
+      <input
+        class="search__control"
+        type="search"
+        id="search-q"
+        name="q"
+        placeholder={s.keywordPlaceholder}
+        autocomplete="off"
+        enterkeyhint="search"
+      />
+    </label>
+
+    <label class="search__field" for="search-category">
+      <span class="search__label">{s.category}</span>
+      <select class="search__control" id="search-category" name="category">
+        <option value="">{s.anyCategory}</option>
+        {categories.map((item) => <option value={item.id}>{categoryText(t, item.id).name}</option>)}
+      </select>
+      <Icon name="chevron-down" size={18} class="search__chevron" />
+    </label>
+
+    <label class="search__field" for="search-area">
+      <span class="search__label">{s.area}</span>
+      <select class="search__control" id="search-area" name="area">
+        <option value="">{s.anyArea}</option>
+        {areas.map((item) => <option value={item.id}>{areaName(item.id, locale)}</option>)}
+      </select>
+      <Icon name="chevron-down" size={18} class="search__chevron" />
+    </label>
+
+    <button class="btn btn--brand btn--lg search__submit" type="submit">
+      <Icon name="search" size={18} />
+      {s.submit}
+    </button>
+  </div>
+
+  <!-- Ayrıntılar yalnızca isteyene açılır. -->
+  <details class="search__more">
+    <summary>
+      <Icon name="sliders-horizontal" size={18} />
+      {s.advanced}
+    </summary>
+    <div class="search__grid">
+      <fieldset class="field">
+        <legend class="field__label">{s.dealType}</legend>
+        <div class="segmented">
+          <label><input type="radio" name="deal" value="" checked /><span>{s.any}</span></label>
+          <label><input type="radio" name="deal" value="sale" /><span>{s.sale}</span></label>
+          <label><input type="radio" name="deal" value="rent" /><span>{s.rent}</span></label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label class="field__label" for="search-min">{s.price} ({defaultCurrency})</label>
+        <div class="search__range">
+          <input
+            class="input"
+            type="number"
+            id="search-min"
+            name="min"
+            min="0"
+            inputmode="numeric"
+            placeholder={s.priceMin}
+          />
+          <input
+            class="input"
+            type="number"
+            id="search-max"
+            name="max"
+            min="0"
+            inputmode="numeric"
+            placeholder={s.priceMax}
+            aria-label={s.priceMax}
+          />
+        </div>
+      </div>
+      <label class="check" for="search-photos">
+        <input type="checkbox" id="search-photos" name="photos" value="1" />
+        {s.withPhotos}
+      </label>
+    </div>
+  </details>
+</form>
+
+<style>
+  .search {
+    display: grid;
+    gap: var(--s-2);
+    max-width: 60rem;
+  }
+
+  .search__bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: stretch;
+    padding: var(--s-2);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-xl);
+    background: var(--c-raised);
+    box-shadow: var(--shadow-2);
+  }
+
+  .search__field {
+    position: relative;
+    display: grid;
+    align-content: center;
+    gap: 1px;
+    min-width: 0;
+    padding: var(--s-2) var(--s-4);
+    border-radius: var(--r-lg);
+    cursor: text;
+  }
+
+  .search__field--keyword {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: var(--s-3);
+    align-items: center;
+    color: var(--c-ink-3);
+  }
+
+  .search__field--keyword :global(.icon) {
+    grid-row: span 2;
+  }
+
+  /* Alanlar arasındaki ince ayraç */
+  .search__field + .search__field::before {
+    content: '';
+    position: absolute;
+    inset-block: 22%;
+    inset-inline-start: 0;
+    width: 1px;
+    background: var(--c-line);
+  }
+
+  .search__field:focus-within {
+    background: var(--c-surface);
+    box-shadow: inset 0 0 0 2px var(--c-brand);
+  }
+
+  .search__label {
+    color: var(--c-ink-3);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .search__control {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    padding-inline-end: var(--s-5);
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--c-ink);
+    font-size: var(--fs-body);
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    appearance: none;
+  }
+
+  .search__control::placeholder {
+    color: var(--c-ink-3);
+  }
+
+  select.search__control {
+    cursor: pointer;
+  }
+
+  .search__field :global(.search__chevron) {
+    position: absolute;
+    inset-inline-end: var(--s-3);
+    inset-block-end: 0.875rem;
+    color: var(--c-ink-3);
+    pointer-events: none;
+  }
+
+  .search__submit {
+    margin-inline-start: var(--s-2);
+    border-radius: var(--r-lg);
+  }
+
+  .search__more summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 2.5rem;
+    padding-inline: var(--s-3);
+    border-radius: var(--r-pill);
+    color: var(--c-ink-2);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .search__more summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .search__more summary:hover,
+  .search__more[open] summary {
+    color: var(--c-brand);
+  }
+
+  .search__grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--s-4) var(--s-6);
+    margin-block-start: var(--s-2);
+    padding: var(--s-4) var(--s-5);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-lg);
+    background: var(--c-raised);
+  }
+
+  .search__range {
+    display: flex;
+    gap: var(--s-2);
+  }
+
+  .search__range .input {
+    width: 8.5rem;
+  }
+
+  @media (max-width: 760px) {
+    .search__bar {
+      grid-template-columns: minmax(0, 1fr);
+      border-radius: var(--r-lg);
+    }
+
+    .search__field {
+      padding-block: var(--s-3);
+    }
+
+    .search__field + .search__field::before {
+      inset-block: 0 auto;
+      inset-inline: var(--s-4);
+      width: auto;
+      height: 1px;
+    }
+
+    .search__submit {
+      margin: var(--s-2) 0 0;
+    }
+
+    .search__range .input {
+      width: 100%;
+    }
+
+    .search__grid > * {
+      width: 100%;
+    }
+  }
+</style>

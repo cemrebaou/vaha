@@ -1,0 +1,16 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ResultsView from '@/components/search/ResultsView.astro';
+import { localePaths, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { getListings } from '@/lib/listings';
+
+export const getStaticPaths = localePaths;
+
+const locale = Astro.params.locale as Locale;
+const { t } = useI18n(locale);
+---
+
+<BaseLayout locale={locale} title={t.results.title}>
+  <ResultsView locale={locale} items={getListings()} heading={t.results.title} />
+</BaseLayout>

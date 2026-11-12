@@ -1,0 +1,4 @@
+/* Genel stil girişi. Yazı tipi dosyaları siteyle birlikte sunulur; dış sunucuya istek gitmez. */
+@import '@fontsource-variable/readex-pro/wght.css';
+@import './tokens.css';
+@import './base.css';

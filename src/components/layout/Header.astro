@@ -1,0 +1,371 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import Logo from '@/components/ui/Logo.astro';
+import { useI18n } from '@/i18n';
+import { locales, type Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { categories, categoryText } from '@/config/categories';
+import { currencies, defaultCurrency } from '@/config/currencies';
+
+interface Props {
+  locale: Locale;
+  /** Aynı sayfanın diğer dillerdeki adresleri. */
+  alternates: { locale: Locale; href: string }[];
+}
+
+const { locale, alternates } = Astro.props;
+const { t, meta, link } = useI18n(locale);
+
+const path = Astro.url.pathname;
+const current = (target: string) => (path.startsWith(target) ? 'page' : undefined);
+
+// Üst menüde yalnızca en çok aranan iki kategori durur; gerisi "Tüm kategoriler"de açılır.
+const primary = categories.slice(0, 2).map((item) => ({
+  label: categoryText(t, item.id).name,
+  href: link(route.category(item.id)),
+}));
+const allCategories = link(route.categories());
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <Logo name={t.site.name} href={link(route.home())} />
+
+    <nav class="primary" aria-label={t.nav.main}>
+      {primary.map((item) => <a href={item.href} aria-current={current(item.href)}>{item.label}</a>)}
+      <a href={allCategories} aria-current={current(allCategories)}>{t.nav.allCategories}</a>
+    </nav>
+
+    <div class="actions">
+      <button class="btn btn--ghost prefs-btn" type="button" popovertarget="prefs" aria-label={t.nav.prefs}>
+        <Icon name="globe" size={18} />
+        <span>{meta.short}</span>
+        <span class="prefs-btn__sep" aria-hidden="true"></span>
+        <span>{defaultCurrency}</span>
+      </button>
+      <a class="icon-btn only-desktop" href={link(route.favorites())} aria-label={t.nav.favorites}>
+        <Icon name="heart" />
+      </a>
+      <a class="btn btn--ghost only-desktop" href={link(route.login())}>{t.nav.login}</a>
+      <a class="btn btn--accent only-desktop" href={link(route.post())}>
+        <Icon name="plus" size={18} />
+        {t.nav.post}
+      </a>
+      <button class="icon-btn only-mobile" type="button" popovertarget="mobile-menu" aria-label={t.nav.menu}>
+        <Icon name="menu" size={24} />
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Dil ve para birimi: düğmeye basınca açılır, ana sayfada yer kaplamaz. -->
+<div class="prefs" id="prefs" popover>
+  <p class="prefs__title">{t.nav.language}</p>
+  <ul class="prefs__list">
+    {
+      alternates.map((item) => (
+        <li>
+          <a
+            class="prefs__item"
+            href={item.href}
+            hreflang={locales[item.locale].hreflang}
+            lang={item.locale}
+            data-set-locale={item.locale}
+            aria-current={item.locale === locale ? 'true' : undefined}
+          >
+            {locales[item.locale].label}
+            {item.locale === locale && <Icon name="check" size={18} />}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="prefs__title">{t.nav.currency}</p>
+  <ul class="prefs__list">
+    {
+      currencies.map((code) => (
+        <li class:list={['prefs__item', { 'prefs__item--off': code !== defaultCurrency }]}>
+          <span>
+            {code} <span class="prefs__sub">{t.currencies[code]}</span>
+          </span>
+          {code === defaultCurrency && <Icon name="check" size={18} />}
+        </li>
+      ))
+    }
+  </ul>
+  <p class="prefs__note">{t.nav.currencySoon}</p>
+</div>
+
+<!-- Mobil menü: tam ekran açılır. -->
+<div class="mmenu" id="mobile-menu" popover>
+  <div class="container mmenu__bar">
+    <Logo name={t.site.name} href={link(route.home())} />
+    <button
+      class="icon-btn"
+      type="button"
+      popovertarget="mobile-menu"
+      popovertargetaction="hide"
+      aria-label={t.nav.close}
+    >
+      <Icon name="x" size={24} />
+    </button>
+  </div>
+  <nav class="container mmenu__nav" aria-label={t.nav.main}>
+    <ul>
+      {
+        categories.map((item) => (
+          <li>
+            <a href={link(route.category(item.id))}>
+              <Icon name={item.icon} size={22} />
+              <span>{categoryText(t, item.id).name}</span>
+              <Icon name="chevron-right" size={18} flip />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="mmenu__cta">
+      <a class="btn btn--accent btn--lg btn--block" href={link(route.post())}>
+        <Icon name="plus" size={18} />
+        {t.nav.post}
+      </a>
+      <a class="btn btn--outline btn--lg btn--block" href={link(route.login())}>{t.nav.login}</a>
+    </div>
+  </nav>
+</div>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 50;
+    border-block-end: 1px solid var(--c-line);
+    background: color-mix(in srgb, var(--c-bg) 86%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: var(--s-5);
+    height: var(--header-h);
+  }
+
+  .primary {
+    display: flex;
+    gap: var(--s-1);
+  }
+
+  .primary a {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--r-sm);
+    color: var(--c-ink-2);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    text-decoration: none;
+    transition:
+      background-color 0.15s var(--ease),
+      color 0.15s var(--ease);
+  }
+
+  .primary a:hover {
+    background: var(--c-surface);
+    color: var(--c-ink);
+  }
+
+  .primary a[aria-current='page'] {
+    color: var(--c-brand);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s-1);
+    margin-inline-start: auto;
+  }
+
+  .prefs-btn {
+    padding-inline: 0.75rem;
+    color: var(--c-ink-2);
+  }
+
+  .prefs-btn__sep {
+    width: 1px;
+    height: 0.875rem;
+    background: var(--c-line-strong);
+  }
+
+  .only-mobile {
+    display: none;
+  }
+
+  /* ---- Dil ve para birimi penceresi ---- */
+  .prefs {
+    position: fixed;
+    inset: auto;
+    inset-block-start: calc(var(--header-h) + env(safe-area-inset-top, 0px) + var(--s-2));
+    inset-inline-end: max(var(--gutter), calc((100vw - var(--container)) / 2));
+    width: min(19rem, calc(100vw - 2rem));
+    margin: 0;
+    padding: var(--s-4);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-lg);
+    background: var(--c-raised);
+    color: var(--c-ink);
+    box-shadow: var(--shadow-2);
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 0.16s var(--ease),
+      transform 0.16s var(--ease),
+      overlay 0.16s allow-discrete,
+      display 0.16s allow-discrete;
+  }
+
+  .prefs:popover-open {
+    opacity: 1;
+    transform: none;
+  }
+
+  @starting-style {
+    .prefs:popover-open {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  .prefs__title {
+    margin-block-end: var(--s-1);
+    color: var(--c-ink-3);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+  }
+
+  .prefs__list {
+    margin-block-end: var(--s-4);
+  }
+
+  .prefs__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3);
+    min-height: 2.5rem;
+    padding-inline: var(--s-3);
+    margin-inline: calc(var(--s-3) * -1);
+    border-radius: var(--r-sm);
+    color: var(--c-ink);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  a.prefs__item:hover {
+    background: var(--c-surface);
+  }
+
+  .prefs__item[aria-current='true'] {
+    color: var(--c-brand);
+  }
+
+  .prefs__item--off {
+    color: var(--c-ink-3);
+    font-weight: 400;
+  }
+
+  .prefs__sub {
+    margin-inline-start: var(--s-1);
+    color: var(--c-ink-3);
+    font-weight: 400;
+  }
+
+  .prefs__note {
+    color: var(--c-ink-3);
+    font-size: var(--fs-xs);
+  }
+
+  /* ---- Mobil menü ---- */
+  .mmenu {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+    border: 0;
+    background: var(--c-bg);
+    color: var(--c-ink);
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.18s var(--ease),
+      transform 0.18s var(--ease),
+      overlay 0.18s allow-discrete,
+      display 0.18s allow-discrete;
+  }
+
+  .mmenu:popover-open {
+    opacity: 1;
+    transform: none;
+  }
+
+  @starting-style {
+    .mmenu:popover-open {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  .mmenu__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--header-h);
+    border-block-end: 1px solid var(--c-line);
+  }
+
+  .mmenu__nav {
+    padding-block: var(--s-3) var(--s-6);
+  }
+
+  .mmenu__nav li a {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    min-height: 3.5rem;
+    border-block-end: 1px solid var(--c-line);
+    color: var(--c-ink);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .mmenu__nav li a span {
+    flex: 1;
+  }
+
+  .mmenu__cta {
+    display: grid;
+    gap: var(--s-3);
+    margin-block-start: var(--s-5);
+  }
+
+  @media (max-width: 860px) {
+    .primary,
+    .only-desktop {
+      display: none;
+    }
+
+    .only-mobile {
+      display: inline-grid;
+    }
+
+    .prefs {
+      inset-inline-end: 1rem;
+    }
+  }
+</style>

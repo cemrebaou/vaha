@@ -1,0 +1,78 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import type { IconName } from '@/components/ui/icons';
+
+interface Props {
+  /** Renk tonu: 1 körfez, 2 kum, 3 alacakaranlık, 4 gün batımı */
+  tone?: 1 | 2 | 3 | 4;
+  icon?: IconName;
+  label: string;
+  /** En-boy oranı, ör. "4 / 3" */
+  ratio?: string;
+  class?: string;
+}
+
+const { tone = 1, icon = 'camera', label, ratio = '4 / 3', class: className } = Astro.props;
+---
+
+<!-- Gerçek fotoğraf gelene kadar yerini tutar; ölçüsü sabit olduğu için sayfa zıplamaz. -->
+<div class:list={['ph', `ph--${tone}`, className]} style={`aspect-ratio:${ratio}`} role="img" aria-label={label}>
+  <span class="ph__icon">
+    <Icon name={icon} size={26} />
+  </span>
+</div>
+
+<style>
+  .ph {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    background: linear-gradient(155deg, var(--ph-a), var(--ph-b));
+  }
+
+  .ph--1 {
+    --ph-a: var(--ph-1a);
+    --ph-b: var(--ph-1b);
+  }
+
+  .ph--2 {
+    --ph-a: var(--ph-2a);
+    --ph-b: var(--ph-2b);
+  }
+
+  .ph--3 {
+    --ph-a: var(--ph-3a);
+    --ph-b: var(--ph-3b);
+  }
+
+  .ph--4 {
+    --ph-a: var(--ph-4a);
+    --ph-b: var(--ph-4b);
+  }
+
+  @supports (mask-image: linear-gradient(#000, #000)) {
+    .ph::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--ph-ink);
+      opacity: 0.55;
+      mask-image: var(--lattice);
+      mask-size: 56px 56px;
+    }
+  }
+
+  .ph__icon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--c-raised) 72%, transparent);
+    color: var(--c-ink-2);
+  }
+</style>

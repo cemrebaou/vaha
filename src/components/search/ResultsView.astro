@@ -1,0 +1,170 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import Filters from './Filters.astro';
+import ListingGrid from '@/components/listing/ListingGrid.astro';
+import { fill, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { categories, categoryText, type CategoryId } from '@/config/categories';
+import type { Listing } from '@/lib/listings';
+
+interface Props {
+  locale: Locale;
+  items: Listing[];
+  heading: string;
+  category?: CategoryId;
+}
+
+const { locale, items, heading, category } = Astro.props;
+const { t, link, fmt } = useI18n(locale);
+
+const action = link(category ? route.category(category) : route.search());
+---
+
+<div class="container page-head">
+  <h1 class="h-2">{heading}</h1>
+  <p class="muted small">
+    {fill(t.results.count, { n: fmt.number(items.length) })}
+    {items.length > 0 && <span class="note">{t.home.featuredNote}</span>}
+  </p>
+
+  <!-- Kategoriler arası tek dokunuşla geçiş -->
+  <nav class="cat-nav" aria-label={t.nav.categories}>
+    <ul>
+      <li>
+        <a class="chip" href={link(route.search())} aria-current={category ? undefined : 'page'}>
+          {t.search.any}
+        </a>
+      </li>
+      {
+        categories.map((item) => (
+          <li>
+            <a
+              class="chip"
+              href={link(route.category(item.id))}
+              aria-current={item.id === category ? 'page' : undefined}
+            >
+              <Icon name={item.icon} size={16} />
+              {categoryText(t, item.id).name}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</div>
+
+<div class="container layout">
+  <Filters locale={locale} category={category} action={action} />
+
+  <div class="results" id="results">
+    <div class="toolbar">
+      <a class="btn btn--outline filters-open" href="#filters">
+        <Icon name="sliders-horizontal" size={18} />
+        {t.results.filters}
+      </a>
+      <label class="sort" for="results-sort">
+        <span class="sort__label">{t.results.sort}</span>
+        <select class="select" id="results-sort" name="sort">
+          <option value="new">{t.results.sortNewest}</option>
+          <option value="price-asc">{t.results.sortPriceAsc}</option>
+          <option value="price-desc">{t.results.sortPriceDesc}</option>
+        </select>
+      </label>
+    </div>
+
+    {
+      items.length > 0 ? (
+        <ListingGrid locale={locale} items={items} />
+      ) : (
+        <div class="empty">
+          <span class="empty__icon">
+            <Icon name="search" size={24} />
+          </span>
+          <h2 class="h-3">{t.results.emptyTitle}</h2>
+          <p>{t.results.emptyText}</p>
+          <a class="btn btn--accent" href={link(route.post())}>
+            <Icon name="plus" size={18} />
+            {t.nav.post}
+          </a>
+        </div>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .note {
+    margin-inline-start: var(--s-2);
+    color: var(--c-ink-3);
+  }
+
+  .cat-nav {
+    margin-block-start: var(--s-4);
+    /* Dar ekranda yana kaydırılır; sayfanın kendisi taşmaz. */
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .cat-nav ul {
+    display: flex;
+    gap: var(--s-2);
+    width: max-content;
+    padding-block: 2px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 17.5rem minmax(0, 1fr);
+    align-items: start;
+    gap: var(--s-6);
+  }
+
+  .results {
+    display: grid;
+    gap: var(--s-4);
+    min-width: 0;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--s-3);
+  }
+
+  .filters-open {
+    display: none;
+    margin-inline-end: auto;
+  }
+
+  .sort {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+
+  .sort__label {
+    color: var(--c-ink-2);
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+  }
+
+  .sort .select {
+    width: auto;
+  }
+
+  @media (max-width: 960px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .filters-open {
+      display: inline-flex;
+    }
+
+    .sort__label {
+      display: none;
+    }
+  }
+</style>

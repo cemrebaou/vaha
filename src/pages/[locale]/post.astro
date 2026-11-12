@@ -1,0 +1,183 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { localePaths, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { categories, categoryText } from '@/config/categories';
+
+export const getStaticPaths = localePaths;
+
+const locale = Astro.params.locale as Locale;
+const { t, link, fmt } = useI18n(locale);
+---
+
+<BaseLayout locale={locale} title={t.post.title} noindex>
+  <div class="container post">
+    <header class="page-head">
+      <h1 class="h-2">{t.post.title}</h1>
+      <p class="muted">{t.post.lead}</p>
+    </header>
+
+    <ol class="stepper">
+      {
+        t.post.steps.map((step, index) => (
+          <li aria-current={index === 0 ? 'step' : undefined}>
+            <span class="stepper__no">{fmt.number(index + 1)}</span>
+            {step}
+          </li>
+        ))
+      }
+    </ol>
+
+    <form class="post__form">
+      <fieldset>
+        <legend class="h-3">{t.post.choose}</legend>
+        <div class="tiles">
+          {
+            categories.map((item, index) => (
+              <label class="tile">
+                <input
+                  type="radio"
+                  id={`post-category-${item.id}`}
+                  name="category"
+                  value={item.id}
+                  checked={index === 0}
+                />
+                <span class="tile__box">
+                  <Icon name={item.icon} size={24} />
+                  <span>{categoryText(t, item.id).name}</span>
+                </span>
+              </label>
+            ))
+          }
+        </div>
+      </fieldset>
+
+      <div class="post__foot">
+        <p class="small muted">{t.post.loginNote}</p>
+        <a class="btn btn--brand btn--lg" href={link(route.login())}>
+          {t.post.continue}
+          <Icon name="chevron-right" size={18} flip />
+        </a>
+      </div>
+    </form>
+  </div>
+</BaseLayout>
+
+<style>
+  .post {
+    max-width: calc(52rem + 2 * var(--gutter));
+  }
+
+  .stepper {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-2);
+    margin-block-end: var(--s-6);
+  }
+
+  .stepper li {
+    display: flex;
+    gap: var(--s-1);
+    min-width: 0;
+    padding-block-start: var(--s-2);
+    border-block-start: 3px solid var(--c-line);
+    color: var(--c-ink-3);
+    font-size: var(--fs-xs);
+    overflow-wrap: anywhere;
+  }
+
+  .stepper li[aria-current='step'] {
+    border-color: var(--c-brand);
+    color: var(--c-ink);
+    font-weight: 500;
+  }
+
+  .stepper__no {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stepper__no::after {
+    content: '.';
+  }
+
+  .post__form {
+    display: grid;
+    gap: var(--s-6);
+  }
+
+  .post__form legend {
+    margin-block-end: var(--s-4);
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-3);
+  }
+
+  .tile {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .tile input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .tile__box {
+    display: grid;
+    align-content: start;
+    gap: var(--s-3);
+    height: 100%;
+    padding: var(--s-4);
+    border: 1.5px solid var(--c-line);
+    border-radius: var(--r-lg);
+    background: var(--c-raised);
+    color: var(--c-ink-2);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    transition:
+      border-color 0.15s var(--ease),
+      background-color 0.15s var(--ease);
+  }
+
+  .tile:hover .tile__box {
+    border-color: var(--c-line-strong);
+  }
+
+  .tile input:checked + .tile__box {
+    border-color: var(--c-brand);
+    background: var(--c-brand-soft);
+    color: var(--c-brand-strong);
+  }
+
+  .tile input:focus-visible + .tile__box {
+    outline: 2px solid var(--c-brand);
+    outline-offset: 2px;
+  }
+
+  .post__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-block-start: var(--s-5);
+    border-block-start: 1px solid var(--c-line);
+  }
+
+  .post__foot p {
+    max-width: 44ch;
+  }
+
+  @media (max-width: 760px) {
+    .tiles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

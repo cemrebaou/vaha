@@ -1,0 +1,34 @@
+---
+import { icons, type IconName } from './icons';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+  /** Yön gösteren ikonlar (ok vb.) sağdan sola dillerde aynalanır. */
+  flip?: boolean;
+}
+
+const { name, size = 20, class: className, flip = false } = Astro.props;
+
+// Derleme anında SVG'nin yalnızca iç çizimi alınır; tarayıcıya ek istek gitmez.
+const inner = icons[name]
+  .replace(/<!--[\s\S]*?-->/g, '')
+  .replace(/^[\s\S]*?<svg[^>]*>/, '')
+  .replace(/<\/svg>\s*$/, '')
+  .replace(/\s*\n\s*/g, '');
+---
+
+<svg
+  class:list={['icon', className, { 'icon--flip': flip }]}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.75"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  set:html={inner}
+/>

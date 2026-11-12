@@ -1,0 +1,82 @@
+---
+import Icon from '@/components/ui/Icon.astro';
+import { useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { t, link } = useI18n(locale);
+---
+
+<section class="section section--tight">
+  <div class="container">
+    <div class="cta">
+      <div class="cta__lattice" aria-hidden="true"></div>
+      <div class="cta__text">
+        <h2 class="h-2">{t.home.ctaTitle}</h2>
+        <p>{t.home.ctaText}</p>
+      </div>
+      <a class="btn btn--accent btn--lg" href={link(route.post())}>
+        <Icon name="plus" size={18} />
+        {t.home.ctaButton}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-5);
+    overflow: hidden;
+    padding: clamp(1.5rem, 5vw, 3rem);
+    border-radius: var(--r-xl);
+    background: var(--c-brand-soft);
+    color: var(--c-ink);
+  }
+
+  .cta__lattice {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: -1;
+    width: min(60%, 34rem);
+  }
+
+  @supports (mask-composite: intersect) {
+    .cta__lattice {
+      background: var(--c-brand);
+      opacity: 0.16;
+      mask-image: var(--lattice), linear-gradient(to left, #000 0%, transparent 100%);
+      mask-size:
+        56px 56px,
+        100% 100%;
+      mask-repeat: repeat, no-repeat;
+      mask-composite: intersect;
+    }
+
+    :global([dir='rtl']) .cta__lattice {
+      mask-image: var(--lattice), linear-gradient(to right, #000 0%, transparent 100%);
+    }
+  }
+
+  .cta__text {
+    display: grid;
+    gap: var(--s-2);
+    min-width: 0;
+    max-width: 44ch;
+  }
+
+  .cta__text p {
+    color: var(--c-ink-2);
+  }
+</style>

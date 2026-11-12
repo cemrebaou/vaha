@@ -1,0 +1,29 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { useI18n } from '@/i18n';
+import { defaultLocale } from '@/i18n/config';
+import { route } from '@/config/routes';
+
+const { t, link } = useI18n(defaultLocale);
+---
+
+<BaseLayout locale={defaultLocale} title={t.notFound.title} path="" noindex>
+  <div class="container">
+    <div class="empty not-found">
+      <span class="empty__icon">
+        <Icon name="search" size={24} />
+      </span>
+      <h1 class="h-2">{t.notFound.title}</h1>
+      <p>{t.notFound.text}</p>
+      <a class="btn btn--brand" href={link(route.home())}>{t.notFound.home}</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .not-found {
+    margin-block-start: var(--s-7);
+    border: 0;
+  }
+</style>

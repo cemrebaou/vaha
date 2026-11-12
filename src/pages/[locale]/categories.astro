@@ -1,0 +1,147 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { localePaths, useI18n } from '@/i18n';
+import type { Locale } from '@/i18n/config';
+import { route } from '@/config/routes';
+import { categories, categoryText } from '@/config/categories';
+
+export const getStaticPaths = localePaths;
+
+const locale = Astro.params.locale as Locale;
+const { t, link } = useI18n(locale);
+---
+
+<BaseLayout locale={locale} title={t.nav.allCategories}>
+  <div class="container">
+    <header class="page-head">
+      <h1 class="h-2">{t.nav.allCategories}</h1>
+    </header>
+
+    <!-- Her kategori kapalı gelir; dokununca alt kategorileri açılır. -->
+    <div class="accs">
+      {
+        categories.map((item, index) => {
+          const text = categoryText(t, item.id);
+          const href = link(route.category(item.id));
+          return (
+            <details class="acc" open={index === 0}>
+              <summary>
+                <span class="acc__icon">
+                  <Icon name={item.icon} size={24} />
+                </span>
+                <span class="acc__text">
+                  <span class="acc__name">{text.name}</span>
+                  <span class="acc__hint">{text.hint}</span>
+                </span>
+                <Icon name="chevron-down" size={20} class="acc__chevron" />
+              </summary>
+              <div class="acc__body">
+                <ul>
+                  {item.subs.map((sub) => (
+                    <li>
+                      <a class="chip" href={href}>
+                        {text.subs[sub]}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <a class="text-link" href={href}>
+                  {t.home.seeAll}
+                  <Icon name="chevron-right" size={16} flip />
+                </a>
+              </div>
+            </details>
+          );
+        })
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .accs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--s-3);
+  }
+
+  .acc {
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-lg);
+    background: var(--c-raised);
+  }
+
+  .acc[open] {
+    border-color: var(--c-line-strong);
+  }
+
+  .acc summary {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border-radius: var(--r-lg);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .acc summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .acc__icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--r-md);
+    background: var(--c-brand-soft);
+    color: var(--c-brand);
+  }
+
+  .acc__text {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .acc__name {
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  .acc__hint {
+    color: var(--c-ink-2);
+    font-size: var(--fs-xs);
+  }
+
+  .acc summary :global(.acc__chevron) {
+    color: var(--c-ink-3);
+    transition: transform 0.2s var(--ease);
+  }
+
+  .acc[open] summary :global(.acc__chevron) {
+    transform: rotate(180deg);
+  }
+
+  .acc__body {
+    display: grid;
+    gap: var(--s-4);
+    padding: 0 var(--s-4) var(--s-4);
+  }
+
+  .acc__body ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+
+  @media (max-width: 760px) {
+    .accs {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
